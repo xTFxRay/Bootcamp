@@ -9,8 +9,26 @@ app.use(express.json());
 
 // --- API routes ---------------------------------------------------------
 // Add new endpoints here, all under /api.
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Hello from the server!' });
+// Every endpoint replies with { success, data, error } (see CLAUDE.md).
+function handleGetHealth(req, res) {
+  res.json({
+    success: true,
+    data: { message: 'Hello from the server!' },
+    error: null,
+  });
+}
+
+app.get('/api/health', handleGetHealth);
+
+// Unknown /api address.
+app.use('/api', (req, res) => {
+  res.status(404).json({ success: false, data: null, error: 'Not found' });
+});
+
+// Anything that goes wrong inside an /api handler.
+app.use('/api', (err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ success: false, data: null, error: 'Something went wrong on the server' });
 });
 
 // --- Production: serve the built React app -------------------------------

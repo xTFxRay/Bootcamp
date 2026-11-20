@@ -2,7 +2,12 @@
 
 **Feature:** Opening the app
 **Severity:** Critical
+**Status:** ready
 **Created:** 2026-11-20
+
+## Preconditions
+
+The project's packages are installed (`npm install` has been run in the project folder).
 
 ## Steps
 

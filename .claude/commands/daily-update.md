@@ -20,7 +20,7 @@ Run these from the project folder. "Since midnight" means local midnight today.
 - **Files added today:** `git log --since=midnight --diff-filter=A --name-only --format=`
 - **Unsaved changes:** `git status --short`, plus `git diff HEAD --numstat -- . ':!package-lock.json' ':!updates/'` for changed files. For brand-new files that git isn't tracking yet (`git ls-files --others --exclude-standard`), count their lines with `wc -l`.
 - **Test cases written today:** list `tests/manual/` and read each file. Count the ones whose `**Created:**` line is today's date.
-- **Bugs found today:** list `tests/bugs/`. Count the files whose names start with today's date, and read each for its title and severity.
+- **Bugs found today:** list `tests/bugs/`. Count the files whose names start with today's date, and read each for its title, severity and status.
 
 Leave out `package-lock.json` (generated automatically by npm when packages are installed, not written by anyone) and `updates/` (these reports themselves) from all line counts. Ignore `.gitkeep` files: they're empty placeholders.
 
@@ -85,7 +85,7 @@ Use this format:
 
 ## Bugs found
 
-- <title> (<severity>), or "None"
+- <title> (<severity>, <status>), or "None"
 
 ## Not saved yet
 

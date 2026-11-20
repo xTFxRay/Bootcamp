@@ -6,7 +6,7 @@ allowed-tools: Read, Write, Bash(ls:*), Bash(date:*), AskUserQuestion
 
 Help me write one bug report for this app, then save it as a Markdown file in `tests/bugs/`.
 
-The user may not write code, so keep the conversation plain and friendly. Ask one question at a time and wait for each answer before moving on.
+The user may not write code, so keep the conversation plain and friendly. Ask one question at a time and wait for each answer before moving on. Follow the severity definitions and the voice rules in CLAUDE.md.
 
 If text was given after the command, treat it as the answer to question 1 and skip that question: $ARGUMENTS
 
@@ -19,9 +19,13 @@ If text was given after the command, treat it as the answer to question 1 and sk
 5. **Severity**: "How serious is this bug?" Use AskUserQuestion with these four options:
    - **Critical**: the app is unusable, data is lost, or there's a security problem
    - **Major**: an important feature is broken, with no easy workaround
-   - **Minor**: something is wrong but there's a workaround, or it's a small feature
+   - **Minor**: something is wrong but there's a workaround, or it affects a small feature
    - **Trivial**: a cosmetic issue, like a typo or misalignment
 6. **Title**: suggest a short, specific title that names the problem (for example "Home page shows 'Could not reach the server'") and ask the user to accept it or give their own.
+
+## Status
+
+Don't ask about status. Every new bug report starts as **open**. The other statuses (in-progress, resolved, closed, reopened) are set later, as the bug is worked on.
 
 ## Timestamp
 
@@ -38,6 +42,7 @@ Show the finished bug report in the format below and ask "Save this?" Make any c
 
 **Where:** <page or screen>
 **Severity:** <Critical | Major | Minor | Trivial>
+**Status:** open
 **Reported:** <timestamp, e.g. 2026-11-20 14:05 EET>
 
 ## Steps to reproduce

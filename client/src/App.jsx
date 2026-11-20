@@ -6,7 +6,7 @@ export default function App() {
   useEffect(() => {
     fetch('/api/health')
       .then((res) => res.json())
-      .then((data) => setServerMessage(data.message))
+      .then((body) => setServerMessage(body.success ? body.data.message : body.error))
       .catch(() => setServerMessage('Could not reach the server.'));
   }, []);
 
