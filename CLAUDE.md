@@ -54,3 +54,10 @@ Every endpoint returns:
 ## Voice
 
 Write all test cases and bug reports in clear, direct English. Say exactly what happens. No buzzwords, no filler.
+
+## Text blocks
+
+For text shown in chat, unless explicitly told otherwise. Saved files keep the formats the slash commands define.
+
+- Put text blocks in a plain `text` code block, so they show in black and white with no syntax colors.
+- Don't bold anything except titles and headings.
