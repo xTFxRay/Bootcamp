@@ -96,4 +96,4 @@ Use this format:
 
 - Save to `updates/<YYYY-MM-DD>.md`. Writing the file creates the folder if needed.
 - There is one file per day. If today's file already exists, replace it: the new update covers the whole day so far, so it includes everything the earlier one had. Tell the user you updated the existing file.
-- When it's saved, show the "At a glance" table and give the file path.
+- When it's saved, print the whole update in the chat, exactly as saved, so the user can read it straight away without opening the file. Show it as normal formatted text, not inside a code block, so the headings and table display properly. Put the file path just above it.
