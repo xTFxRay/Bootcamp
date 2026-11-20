@@ -284,6 +284,7 @@ th {
   font-size: 0.9rem;
 }
 
+.status-in-progress { color: #b45309; }
 .status-passed { color: #15803d; }
 .status-failed { color: #b91c1c; }
 .status-draft,
@@ -462,6 +463,187 @@ th {
   justify-content: flex-end;
   gap: 0.5rem;
   margin-top: 0.5rem;
+}
+
+/* --- Test suites ------------------------------------------------------- */
+
+td a,
+.back-link a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+td a:hover,
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+.num {
+  text-align: right;
+}
+
+.back-link {
+  margin: 0 0 0.75rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button-danger-outline {
+  color: var(--danger);
+}
+
+.button-small {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.suite-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2.5rem;
+  margin: 1rem 0 2rem;
+}
+
+.suite-meta dt {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.suite-meta dd {
+  margin: 0.2rem 0 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0.75rem 0;
+}
+
+.case-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.case-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+  position: relative;
+}
+
+.case-row:last-child {
+  border-bottom: none;
+}
+
+.case-row.is-dragging {
+  z-index: 5;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+}
+
+.drag-handle {
+  border: none;
+  background: none;
+  padding: 0.3rem 0.4rem;
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+}
+
+.drag-handle:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.empty-panel {
+  margin-top: 1rem;
+}
+
+.case-row .status-text {
+  min-width: 4.5rem;
+}
+
+.case-position {
+  color: var(--muted);
+  min-width: 1.5rem;
+  text-align: right;
+}
+
+.case-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.add-cases-search {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.add-cases-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.add-cases-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.add-cases-list li:last-child {
+  border-bottom: none;
+}
+
+.add-cases-footer {
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.add-cases-footer .button-primary {
+  margin-left: auto;
 }
 
 /* Keep room for the dropdown arrow (the rules above reset the padding). */

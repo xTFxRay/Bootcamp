@@ -5,8 +5,7 @@ import Modal from '../components/Modal.jsx';
 import RowMenu from '../components/RowMenu.jsx';
 import SeverityBadge from '../components/SeverityBadge.jsx';
 import TestCaseForm from '../components/TestCaseForm.jsx';
-
-const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+import { formatDate } from '../format.js';
 
 export default function TestCasesPage() {
   const [result, setResult] = useState(null);
@@ -146,7 +145,7 @@ export default function TestCasesPage() {
                 <td className="title-cell">{tc.title}</td>
                 <td><SeverityBadge severity={tc.severity} /></td>
                 <td><span className={`status-text status-${tc.status}`}>{tc.status}</span></td>
-                <td className="nowrap">{dateFormat.format(new Date(tc.updatedAt))}</td>
+                <td className="nowrap">{formatDate(tc.updatedAt)}</td>
                 <td className="actions-cell">
                   <RowMenu
                     label={tc.title}
@@ -190,7 +189,7 @@ export default function TestCasesPage() {
 
       {modal?.type === 'delete' && (
         <Modal title="Delete test case?" onClose={closeModal}>
-          <p>“{modal.testCase.title}” will be deleted. This can't be undone.</p>
+          <p>“{modal.testCase.title}” will be deleted and removed from any test suites. This can't be undone.</p>
           {deleteError && <p className="form-error" role="alert">{deleteError}</p>}
           <div className="form-actions">
             <button type="button" className="button" onClick={closeModal}>Cancel</button>

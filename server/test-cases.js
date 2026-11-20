@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import db, { SEVERITIES, TEST_CASE_STATUSES } from './db.js';
+import { ok, fail } from './api-response.js';
 
 // Test case endpoints, mounted at /api/test-cases.
 // Every reply uses { success, data, error } (see CLAUDE.md).
@@ -11,11 +12,8 @@ const SORTABLE = {
   severity: `CASE severity WHEN 'Critical' THEN 4 WHEN 'Major' THEN 3 WHEN 'Minor' THEN 2 ELSE 1 END`,
 };
 
-const ok = (res, data, code = 200) => res.status(code).json({ success: true, data, error: null });
-const fail = (res, code, error) => res.status(code).json({ success: false, data: null, error });
-
 // Database row -> API shape.
-function toTestCase(row) {
+export function toTestCase(row) {
   return {
     id: row.id,
     title: row.title,

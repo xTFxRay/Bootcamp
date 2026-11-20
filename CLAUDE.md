@@ -22,6 +22,15 @@ Saved in `tests/manual/`.
 - **Severity**: Critical / Major / Minor / Trivial
 - **Status**: draft / ready / passed / failed / skipped
 
+## Test suite fields
+
+Stored in the app's database; a suite groups existing test cases in a set order.
+
+- **Name**
+- **Feature**: what the suite tests, e.g. "login"
+- **Status**: draft / ready / in-progress / passed / failed
+- **Test cases**: ordered list; a test case can be in several suites, and removing it from a suite doesn't delete it
+
 ## Bug report fields
 
 Saved in `tests/bugs/`.

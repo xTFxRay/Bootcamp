@@ -31,3 +31,14 @@ export const testCasesApi = {
   update: (id, testCase) => request(`/test-cases/${id}`, { method: 'PUT', body: testCase }),
   remove: (id) => request(`/test-cases/${id}`, { method: 'DELETE' }),
 };
+
+export const testSuitesApi = {
+  list: (status) => request(`/test-suites${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  get: (id) => request(`/test-suites/${id}`),
+  create: (suite) => request('/test-suites', { method: 'POST', body: suite }),
+  update: (id, suite) => request(`/test-suites/${id}`, { method: 'PUT', body: suite }),
+  remove: (id) => request(`/test-suites/${id}`, { method: 'DELETE' }),
+  addCase: (id, testCaseId) => request(`/test-suites/${id}/cases`, { method: 'POST', body: { testCaseId } }),
+  removeCase: (id, testCaseId) => request(`/test-suites/${id}/cases/${testCaseId}`, { method: 'DELETE' }),
+  reorder: (id, testCaseIds) => request(`/test-suites/${id}/order`, { method: 'PUT', body: { testCaseIds } }),
+};

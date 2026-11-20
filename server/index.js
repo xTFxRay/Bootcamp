@@ -2,6 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import testCasesRouter from './test-cases.js';
+import testSuitesRouter from './test-suites.js';
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -21,6 +22,7 @@ function handleGetHealth(req, res) {
 
 app.get('/api/health', handleGetHealth);
 app.use('/api/test-cases', testCasesRouter);
+app.use('/api/test-suites', testSuitesRouter);
 
 // Unknown /api address.
 function handleSendNotFound(req, res) {
