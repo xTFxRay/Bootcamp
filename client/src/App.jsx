@@ -1,20 +1,22 @@
-import { useEffect, useState } from 'react';
+import { NavLink, Route, Routes } from 'react-router-dom';
+import HomePage from './pages/HomePage.jsx';
+import TestCasesPage from './pages/TestCasesPage.jsx';
 
 export default function App() {
-  const [serverMessage, setServerMessage] = useState('Connecting to server…');
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((res) => res.json())
-      .then((body) => setServerMessage(body.success ? body.data.message : body.error))
-      .catch(() => setServerMessage('Could not reach the server.'));
-  }, []);
-
   return (
-    <main className="app">
-      <h1>Bootcamp App</h1>
-      <p>Your app is up and running.</p>
-      <p className="status">Server says: {serverMessage}</p>
-    </main>
+    <>
+      <header className="topbar">
+        <span className="brand">Bootcamp App</span>
+        <nav>
+          <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/test-cases">Test cases</NavLink>
+        </nav>
+      </header>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/test-cases" element={<TestCasesPage />} />
+        <Route path="*" element={<main className="page"><h1>Page not found</h1></main>} />
+      </Routes>
+    </>
   );
 }

@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Local database (recreated and re-seeded on first run)
+server/data/
+
 # Build output
 client/dist/
 

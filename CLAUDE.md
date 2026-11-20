@@ -2,7 +2,7 @@
 
 ## Stack
 
-Express 5 server (`server/index.js`) + React 19 client (`client/src/`, built with Vite) in one npm workspace; `npm run dev` starts both, and the client on port 5173 proxies `/api` to the server on port 3001.
+Express 5 server (`server/index.js`) with a SQLite database (better-sqlite3, `server/data/app.db`, git-ignored and seeded on first run) + React 19 client (`client/src/`, Vite, React Router) in one npm workspace; `npm run dev` starts both, and the client on port 5173 proxies `/api` to the server on port 3001.
 
 ## Severity levels
 

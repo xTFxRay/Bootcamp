@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import testCasesRouter from './test-cases.js';
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -19,6 +20,7 @@ function handleGetHealth(req, res) {
 }
 
 app.get('/api/health', handleGetHealth);
+app.use('/api/test-cases', testCasesRouter);
 
 // Unknown /api address.
 app.use('/api', (req, res) => {
@@ -27,6 +29,9 @@ app.use('/api', (req, res) => {
 
 // Anything that goes wrong inside an /api handler.
 app.use('/api', (err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ success: false, data: null, error: 'Request body is not valid JSON' });
+  }
   console.error(err);
   res.status(500).json({ success: false, data: null, error: 'Something went wrong on the server' });
 });
