@@ -23,18 +23,21 @@ app.get('/api/health', handleGetHealth);
 app.use('/api/test-cases', testCasesRouter);
 
 // Unknown /api address.
-app.use('/api', (req, res) => {
+function handleSendNotFound(req, res) {
   res.status(404).json({ success: false, data: null, error: 'Not found' });
-});
+}
 
 // Anything that goes wrong inside an /api handler.
-app.use('/api', (err, req, res, next) => {
+function handleReportError(err, req, res, next) {
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ success: false, data: null, error: 'Request body is not valid JSON' });
   }
   console.error(err);
   res.status(500).json({ success: false, data: null, error: 'Something went wrong on the server' });
-});
+}
+
+app.use('/api', handleSendNotFound);
+app.use('/api', handleReportError);
 
 // --- Production: serve the built React app -------------------------------
 // In development the React dev server (Vite) handles the webpage instead.
