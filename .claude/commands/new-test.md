@@ -1,7 +1,7 @@
 ---
 description: Walk through writing a manual test case and save it under tests/manual/
 argument-hint: "[optional: feature name]"
-allowed-tools: Read, Write, Glob, AskUserQuestion
+allowed-tools: Read, Write, Bash(ls:*), AskUserQuestion
 ---
 
 Help me write one manual test case for this app, then save it as a Markdown file in `tests/manual/`.
@@ -48,7 +48,7 @@ Show the finished test case in the format below and ask "Save this?" Make any ch
 
 ## Saving
 
-- Folder: `tests/manual/`. Create it if it doesn't exist.
+- Folder: `tests/manual/`. Writing the file creates the folder if it doesn't exist.
 - File name: the title in lowercase, with spaces turned into hyphens and punctuation removed, then `.md`. For example: `tests/manual/home-page-shows-server-greeting.md`.
-- Check with Glob first. If a file with that name already exists, add `-2`, `-3`, and so on, rather than overwriting it.
+- First, list what's already there by running `ls tests/manual/` with the Bash tool. If that fails because the folder doesn't exist yet, there's nothing to clash with. If a file with that name already exists, add `-2`, `-3`, and so on, rather than overwriting it.
 - When it's saved, tell the user the file path and offer to write another test case.
