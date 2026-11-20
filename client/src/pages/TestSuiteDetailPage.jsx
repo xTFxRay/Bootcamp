@@ -1,19 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { testSuitesApi } from '../api.js';
 import { formatDate, suiteDeleteMessage } from '../format.js';
+import { useDiscardGuard } from '../use-discard-guard.js';
 import AddCasesPanel from '../components/AddCasesPanel.jsx';
 import Modal from '../components/Modal.jsx';
 import SortableCaseList from '../components/SortableCaseList.jsx';
 import TestSuiteForm from '../components/TestSuiteForm.jsx';
 
+const CHANGED_ELSEWHERE =
+  'This suite was changed somewhere else, so the latest version is now shown. Please make your change again.';
+const UNDO_SECONDS = 10;
+
 export default function TestSuiteDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { setDirty, guard } = useDiscardGuard();
   const [suite, setSuite] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [actionError, setActionError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // The last removed test case, so it can be put back: { testCase, position }
+  const [removed, setRemoved] = useState(null);
+  const undoTimer = useRef(null);
 
   // modal: null | 'edit' | 'delete' | 'add-cases'
   const [modal, setModal] = useState(null);
@@ -36,14 +46,29 @@ export default function TestSuiteDetailPage() {
     };
   }, [id]);
 
+  useEffect(() => () => clearTimeout(undoTimer.current), []);
+
+  // Shows a failed change's error, then reloads the suite so the page matches the server again.
+  const handleActionError = async (err) => {
+    const changedElsewhere = err.status === 409 || err.status === 404;
+    setActionError(changedElsewhere ? CHANGED_ELSEWHERE : err.message);
+    try {
+      setSuite(await testSuitesApi.get(id));
+    } catch {
+      // Server unreachable: keep what's on screen; the error above already explains.
+    }
+  };
+
   // Runs a change against the server and shows the suite it sends back.
   const run = async (action) => {
     setBusy(true);
     setActionError('');
     try {
       setSuite(await action());
+      return true;
     } catch (err) {
-      setActionError(err.message);
+      await handleActionError(err);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -52,13 +77,27 @@ export default function TestSuiteDetailPage() {
   const handleReorder = (reordered) => {
     const previous = suite;
     setSuite({ ...suite, cases: reordered }); // show the new order straight away
-    run(() => testSuitesApi.reorder(suite.id, reordered.map((c) => c.id))).then(() => {
-      // If saving failed, run() has shown the error; put the old order back.
-      setSuite((current) => (current.cases === reordered ? previous : current));
+    run(() => testSuitesApi.reorder(suite.id, reordered.map((c) => c.id))).then((saved) => {
+      // If saving failed and the suite couldn't be reloaded, put the old order back.
+      if (!saved) setSuite((current) => (current.cases === reordered ? previous : current));
     });
   };
 
-  const handleRemove = (testCase) => run(() => testSuitesApi.removeCase(suite.id, testCase.id));
+  const handleRemove = async (testCase) => {
+    const position = suite.cases.findIndex((c) => c.id === testCase.id) + 1;
+    if (await run(() => testSuitesApi.removeCase(suite.id, testCase.id))) {
+      clearTimeout(undoTimer.current);
+      setRemoved({ testCase, position });
+      undoTimer.current = setTimeout(() => setRemoved(null), UNDO_SECONDS * 1000);
+    }
+  };
+
+  const handleUndo = async () => {
+    const { testCase, position } = removed;
+    clearTimeout(undoTimer.current);
+    setRemoved(null);
+    await run(() => testSuitesApi.addCase(suite.id, testCase.id, position));
+  };
 
   const handleAdd = async (testCase) => {
     setSuite(await testSuitesApi.addCase(suite.id, testCase.id));
@@ -120,6 +159,15 @@ export default function TestSuiteDetailPage() {
 
       {actionError && <p className="form-error" role="alert">{actionError}</p>}
 
+      <div role="status" className="notice-slot">
+        {removed && (
+          <p className="notice">
+            Removed “{removed.testCase.title}” from this suite.
+            <button type="button" className="link-button" onClick={handleUndo} disabled={busy}>Undo</button>
+          </p>
+        )}
+      </div>
+
       {suite.cases.length > 0 ? (
         <>
           <p className="hint">
@@ -132,8 +180,8 @@ export default function TestSuiteDetailPage() {
       )}
 
       {modal === 'edit' && (
-        <Modal title="Edit test suite" onClose={closeModal}>
-          <TestSuiteForm initial={suite} onSubmit={handleSave} onCancel={closeModal} />
+        <Modal title="Edit test suite" onClose={guard(closeModal)}>
+          <TestSuiteForm initial={suite} onSubmit={handleSave} onCancel={guard(closeModal)} onDirtyChange={setDirty} />
         </Modal>
       )}
 

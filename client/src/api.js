@@ -18,7 +18,11 @@ export async function request(path, { method = 'GET', body } = {}) {
   } catch {
     throw new Error(`The server sent an unexpected reply (HTTP ${res.status}).`);
   }
-  if (!payload.success) throw new Error(payload.error || 'Something went wrong.');
+  if (!payload.success) {
+    const error = new Error(payload.error || 'Something went wrong.');
+    error.status = res.status; // e.g. 409 when something was changed elsewhere
+    throw error;
+  }
   return payload.data;
 }
 
@@ -38,7 +42,9 @@ export const testSuitesApi = {
   create: (suite) => request('/test-suites', { method: 'POST', body: suite }),
   update: (id, suite) => request(`/test-suites/${id}`, { method: 'PUT', body: suite }),
   remove: (id) => request(`/test-suites/${id}`, { method: 'DELETE' }),
-  addCase: (id, testCaseId) => request(`/test-suites/${id}/cases`, { method: 'POST', body: { testCaseId } }),
+  // position: 1 = first; leave it out to add at the end.
+  addCase: (id, testCaseId, position) =>
+    request(`/test-suites/${id}/cases`, { method: 'POST', body: { testCaseId, position } }),
   removeCase: (id, testCaseId) => request(`/test-suites/${id}/cases/${testCaseId}`, { method: 'DELETE' }),
   reorder: (id, testCaseIds) => request(`/test-suites/${id}/order`, { method: 'PUT', body: { testCaseIds } }),
 };

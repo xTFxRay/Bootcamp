@@ -1,13 +1,20 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TEST_SUITE_STATUSES } from '../constants.js';
 
 // Create or edit a test suite's name, feature and status.
-export default function TestSuiteForm({ initial, onSubmit, onCancel }) {
-  const [values, setValues] = useState(() => ({
+// onDirtyChange(true/false) reports whether anything differs from how the form started.
+export default function TestSuiteForm({ initial, onSubmit, onCancel, onDirtyChange }) {
+  const [start] = useState(() => ({
     name: initial?.name ?? '',
     feature: initial?.feature ?? '',
     status: initial?.status ?? 'draft',
   }));
+  const [values, setValues] = useState(start);
+
+  useEffect(() => {
+    onDirtyChange?.(JSON.stringify(values) !== JSON.stringify(start));
+  }, [values, start, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 

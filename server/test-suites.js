@@ -2,6 +2,7 @@ import { Router } from 'express';
 import db, { TEST_SUITE_STATUSES } from './db.js';
 import { ok, fail } from './api-response.js';
 import { toTestCase } from './test-cases.js';
+import { textTypeError, toId } from './validation.js';
 
 // Test suite endpoints, mounted at /api/test-suites.
 // Every reply uses { success, data, error } (see CLAUDE.md).
@@ -55,6 +56,13 @@ function touchSuite(id) {
 function validateTestSuite(body) {
   if (!body || typeof body !== 'object') return { error: 'Request body must be a JSON object' };
 
+  const typeError = textTypeError(body, [
+    ['name', 'Name'],
+    ['feature', 'Feature'],
+    ['status', 'Status'],
+  ]);
+  if (typeError) return { error: typeError };
+
   const text = (v) => (typeof v === 'string' ? v.trim() : '');
   const name = text(body.name);
   const feature = text(body.feature);
@@ -67,12 +75,6 @@ function validateTestSuite(body) {
   if (!TEST_SUITE_STATUSES.includes(status)) return { error: statusError };
 
   return { values: { name, feature, status } };
-}
-
-// A whole number above 0, or null.
-function toId(value) {
-  const n = Number(value);
-  return Number.isInteger(n) && n > 0 ? n : null;
 }
 
 // GET /api/test-suites?status=ready
@@ -129,13 +131,18 @@ function handleDeleteTestSuite(req, res) {
   ok(res, toTestSuite(row));
 }
 
-// POST /api/test-suites/:id/cases  { testCaseId } -> adds it at the end
+// POST /api/test-suites/:id/cases  { testCaseId, position? }
+// Adds it at the end, or at position (1 = first) when given; used to undo a remove.
 function handleAddTestSuiteCase(req, res) {
   const suiteId = req.params.id;
   if (!findSuite(suiteId)) return fail(res, 404, 'Test suite not found');
 
   const testCaseId = toId(req.body?.testCaseId);
   if (!testCaseId) return fail(res, 400, 'testCaseId must be a test case ID number');
+  const position = req.body?.position;
+  if (position !== undefined && !toId(position)) {
+    return fail(res, 400, 'position must be a whole number, 1 or more');
+  }
   if (!db.prepare('SELECT 1 FROM test_cases WHERE id = ?').get(testCaseId)) {
     return fail(res, 404, 'Test case not found');
   }
@@ -144,14 +151,14 @@ function handleAddTestSuiteCase(req, res) {
   }
 
   db.transaction(() => {
-    const { next } = db
-      .prepare('SELECT COALESCE(MAX(sort_order), 0) + 1 AS next FROM test_suite_cases WHERE suite_id = ?')
-      .get(suiteId);
-    db.prepare('INSERT INTO test_suite_cases (suite_id, test_case_id, sort_order) VALUES (?, ?, ?)').run(
+    const order = suiteCases(suiteId).map((c) => c.id);
+    const index = position === undefined ? order.length : Math.min(toId(position), order.length + 1) - 1;
+    order.splice(index, 0, testCaseId);
+    db.prepare('INSERT INTO test_suite_cases (suite_id, test_case_id, sort_order) VALUES (?, ?, 0)').run(
       suiteId,
-      testCaseId,
-      next
+      testCaseId
     );
+    renumber(suiteId, order);
     touchSuite(suiteId);
   })();
   ok(res, suiteWithCases(suiteId), 201);
@@ -193,7 +200,12 @@ function handleReorderTestSuiteCases(req, res) {
     new Set(newOrder).size === newOrder.length &&
     newOrder.every((id) => current.includes(id));
   if (!sameSet) {
-    return fail(res, 400, "testCaseIds must list each of the suite's test cases exactly once");
+    // Usually means the suite was changed somewhere else after the page loaded it.
+    return fail(
+      res,
+      409,
+      "The suite's test cases have changed since this list was loaded. Reload the suite and try again."
+    );
   }
 
   db.transaction(() => {
@@ -208,6 +220,12 @@ function renumber(suiteId, testCaseIds) {
   const update = db.prepare('UPDATE test_suite_cases SET sort_order = ? WHERE suite_id = ? AND test_case_id = ?');
   testCaseIds.forEach((caseId, i) => update.run(i + 1, suiteId, caseId));
 }
+
+// Only whole-number IDs reach the handlers; anything else, like "1.0" or "abc", is not found.
+router.param('id', (req, res, next, id) => (toId(id) ? next() : fail(res, 404, 'Test suite not found')));
+router.param('testCaseId', (req, res, next, id) =>
+  toId(id) ? next() : fail(res, 404, 'This test case is not in the suite')
+);
 
 router.get('/', handleListTestSuites);
 router.get('/:id', handleGetTestSuite);

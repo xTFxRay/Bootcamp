@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import db, { SEVERITIES, TEST_CASE_STATUSES } from './db.js';
 import { ok, fail } from './api-response.js';
+import { textTypeError, toId } from './validation.js';
 
 // Test case endpoints, mounted at /api/test-cases.
 // Every reply uses { success, data, error } (see CLAUDE.md).
@@ -30,6 +31,18 @@ export function toTestCase(row) {
 // Checks a create/update body. Returns { values } or { error }.
 function validateTestCase(body) {
   if (!body || typeof body !== 'object') return { error: 'Request body must be a JSON object' };
+
+  const typeError = textTypeError(body, [
+    ['title', 'Title'],
+    ['preconditions', 'Preconditions'],
+    ['expectedResult', 'Expected result'],
+    ['severity', 'Severity'],
+    ['status', 'Status'],
+  ]);
+  if (typeError) return { error: typeError };
+  if (body.steps !== undefined && (!Array.isArray(body.steps) || body.steps.some((s) => typeof s !== 'string'))) {
+    return { error: 'Steps must be a list of text' };
+  }
 
   const text = (v) => (typeof v === 'string' ? v.trim() : '');
   const title = text(body.title);
@@ -137,9 +150,19 @@ function handleDeleteTestCase(req, res) {
   const row = findRow(req.params.id);
   if (!row) return fail(res, 404, 'Test case not found');
 
-  db.prepare('DELETE FROM test_cases WHERE id = ?').run(req.params.id);
+  db.transaction(() => {
+    // The suites this test case was in are changing too, so mark them updated.
+    db.prepare(
+      `UPDATE test_suites SET updated_at = ?
+       WHERE id IN (SELECT suite_id FROM test_suite_cases WHERE test_case_id = ?)`
+    ).run(new Date().toISOString(), req.params.id);
+    db.prepare('DELETE FROM test_cases WHERE id = ?').run(req.params.id);
+  })();
   ok(res, toTestCase(row));
 }
+
+// Only whole-number IDs reach the handlers; anything else, like "1.0" or "abc", is not found.
+router.param('id', (req, res, next, id) => (toId(id) ? next() : fail(res, 404, 'Test case not found')));
 
 router.get('/', handleListTestCases);
 router.get('/:id', handleGetTestCase);

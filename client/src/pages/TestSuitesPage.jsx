@@ -6,8 +6,10 @@ import { formatDate, suiteDeleteMessage } from '../format.js';
 import Modal from '../components/Modal.jsx';
 import RowMenu from '../components/RowMenu.jsx';
 import TestSuiteForm from '../components/TestSuiteForm.jsx';
+import { useDiscardGuard } from '../use-discard-guard.js';
 
 export default function TestSuitesPage() {
+  const { setDirty, guard } = useDiscardGuard();
   const navigate = useNavigate();
   const [suites, setSuites] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -119,8 +121,13 @@ export default function TestSuitesPage() {
       </div>
 
       {(modal?.type === 'add' || modal?.type === 'edit') && (
-        <Modal title={modal.type === 'edit' ? 'Edit test suite' : 'New test suite'} onClose={closeModal}>
-          <TestSuiteForm initial={modal.suite} onSubmit={handleSave} onCancel={closeModal} />
+        <Modal title={modal.type === 'edit' ? 'Edit test suite' : 'New test suite'} onClose={guard(closeModal)}>
+          <TestSuiteForm
+            initial={modal.suite}
+            onSubmit={handleSave}
+            onCancel={guard(closeModal)}
+            onDirtyChange={setDirty}
+          />
         </Modal>
       )}
 

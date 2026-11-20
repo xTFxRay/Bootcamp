@@ -39,6 +39,8 @@ export default function RowMenu({ label, onEdit, onDelete }) {
   }, [position]);
 
   const choose = (action) => {
+    // Put focus back on ⋯ first, so a dialog opened by the action returns focus there when it closes.
+    buttonRef.current?.focus();
     close();
     action();
   };

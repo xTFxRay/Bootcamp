@@ -6,8 +6,10 @@ import RowMenu from '../components/RowMenu.jsx';
 import SeverityBadge from '../components/SeverityBadge.jsx';
 import TestCaseForm from '../components/TestCaseForm.jsx';
 import { formatDate } from '../format.js';
+import { useDiscardGuard } from '../use-discard-guard.js';
 
 export default function TestCasesPage() {
+  const { setDirty, guard } = useDiscardGuard();
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -182,8 +184,13 @@ export default function TestCasesPage() {
       )}
 
       {(modal?.type === 'add' || modal?.type === 'edit') && (
-        <Modal title={modal.type === 'edit' ? 'Edit test case' : 'New test case'} onClose={closeModal}>
-          <TestCaseForm initial={modal.testCase} onSubmit={handleSave} onCancel={closeModal} />
+        <Modal title={modal.type === 'edit' ? 'Edit test case' : 'New test case'} onClose={guard(closeModal)}>
+          <TestCaseForm
+            initial={modal.testCase}
+            onSubmit={handleSave}
+            onCancel={guard(closeModal)}
+            onDirtyChange={setDirty}
+          />
         </Modal>
       )}
 

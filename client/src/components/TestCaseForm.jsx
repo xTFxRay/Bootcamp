@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SEVERITIES, TEST_CASE_STATUSES } from '../constants.js';
 
 const EMPTY = {
@@ -11,12 +11,19 @@ const EMPTY = {
 };
 
 // Add or edit a test case. All fields are required except preconditions.
-export default function TestCaseForm({ initial, onSubmit, onCancel }) {
-  const [values, setValues] = useState(() =>
+// onDirtyChange(true/false) reports whether anything differs from how the form started.
+export default function TestCaseForm({ initial, onSubmit, onCancel, onDirtyChange }) {
+  const [start] = useState(() =>
     initial
       ? { ...initial, preconditions: initial.preconditions ?? '', steps: initial.steps.length ? initial.steps : [''] }
       : EMPTY
   );
+  const [values, setValues] = useState(start);
+
+  useEffect(() => {
+    onDirtyChange?.(JSON.stringify(values) !== JSON.stringify(start));
+  }, [values, start, onDirtyChange]);
+  useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [focusStep, setFocusStep] = useState(null); // index of a just-added step

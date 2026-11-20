@@ -49,15 +49,28 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS test_suite_cases_order ON test_suite_cases (suite_id, sort_order);
   CREATE INDEX IF NOT EXISTS test_suite_cases_case ON test_suite_cases (test_case_id);
+
+  -- Small settings store. Records which sample data has been added, so it's added only once.
+  CREATE TABLE IF NOT EXISTS app_meta (
+    key   TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
 `);
 
-seedTestCases();
-seedTestSuites();
+seedOnce('seeded_test_cases', 'test_cases', seedTestCases);
+seedOnce('seeded_test_suites', 'test_suites', seedTestSuites);
+
+// Runs a seed function the first time only. If the user later deletes everything,
+// the samples don't come back. A database that already has rows counts as seeded.
+function seedOnce(key, table, seed) {
+  if (db.prepare('SELECT 1 FROM app_meta WHERE key = ?').get(key)) return;
+  const { count } = db.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get();
+  if (count === 0) seed();
+  db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(key, new Date().toISOString());
+}
 
 // Adds sample test cases the first time the app runs, so the page isn't empty.
 function seedTestCases() {
-  const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_cases').get();
-  if (count > 0) return;
 
   const daysAgo = (days) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
@@ -141,12 +154,9 @@ function seedTestCases() {
   console.log(`Added ${samples.length} sample test cases to the database.`);
 }
 
-// Adds 2 sample suites with 3 test cases each the first time suites exist.
+// Adds 2 sample suites with 3 test cases each.
 // Picks the sample test cases by title, filling any gaps with other test cases.
 function seedTestSuites() {
-  const { count } = db.prepare('SELECT COUNT(*) AS count FROM test_suites').get();
-  if (count > 0) return;
-
   const allIds = db.prepare('SELECT id FROM test_cases ORDER BY id').all().map((r) => r.id);
   const findId = db.prepare('SELECT id FROM test_cases WHERE title = ? ORDER BY id LIMIT 1');
   const pickCases = (titles) => {
