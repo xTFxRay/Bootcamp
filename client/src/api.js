@@ -59,6 +59,17 @@ export const bugsApi = {
   addComment: (id, message) => request(`/bugs/${id}/comments`, { method: 'POST', body: { message } }),
 };
 
+export const testRunsApi = {
+  list: (params) => {
+    const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null));
+    return request(`/test-runs?${query}`);
+  },
+  get: (id) => request(`/test-runs/${id}`),
+  create: (suiteId, createdBy) => request('/test-runs', { method: 'POST', body: { suiteId, createdBy } }),
+  recordResult: (runId, resultId, result, notes) =>
+    request(`/test-runs/${runId}/results/${resultId}`, { method: 'PATCH', body: { result, notes } }),
+};
+
 export const testSuitesApi = {
   list: (status) => request(`/test-suites${status ? `?status=${encodeURIComponent(status)}` : ''}`),
   get: (id) => request(`/test-suites/${id}`),

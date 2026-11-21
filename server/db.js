@@ -10,6 +10,8 @@ export const TEST_SUITE_STATUSES = ['draft', 'ready', 'in-progress', 'passed', '
 export const BUG_STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reopened'];
 export const BUG_PRIORITIES = ['high', 'medium', 'low'];
 export const BUG_ACTIVITY_ACTIONS = ['created', 'status_change', 'comment'];
+export const TEST_RUN_STATUSES = ['in-progress', 'passed', 'failed'];
+export const TEST_RUN_RESULTS = ['passed', 'failed', 'skipped'];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.DB_PATH || path.join(__dirname, 'data', 'app.db');
@@ -88,12 +90,50 @@ db.exec(`
     created_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS bug_activity_bug ON bug_activity (bug_id, created_at);
+
+  -- One execution of a test suite. suite_name is copied in, so the run still makes sense
+  -- if the suite is later renamed or deleted (suite_id then becomes NULL).
+  CREATE TABLE IF NOT EXISTS test_runs_v2 (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    suite_id   INTEGER REFERENCES test_suites(id) ON DELETE SET NULL,
+    suite_name TEXT NOT NULL,
+    status     TEXT NOT NULL DEFAULT 'in-progress' CHECK (status IN (${list(TEST_RUN_STATUSES)})),
+    pass_count INTEGER NOT NULL DEFAULT 0,
+    fail_count INTEGER NOT NULL DEFAULT 0,
+    skip_count INTEGER NOT NULL DEFAULT 0,
+    start_time TEXT NOT NULL,
+    end_time   TEXT,                          -- set once every case has a result
+    created_by TEXT NOT NULL
+  );
+
+  -- One row per test case in a run. The case's title, steps etc. are copied in when the run
+  -- starts (a snapshot), so later edits to the test case don't change past runs.
+  CREATE TABLE IF NOT EXISTS test_run_results (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id          INTEGER NOT NULL REFERENCES test_runs_v2(id) ON DELETE CASCADE,
+    test_case_id    INTEGER REFERENCES test_cases(id) ON DELETE SET NULL,
+    sort_order      INTEGER NOT NULL,
+    title           TEXT NOT NULL,
+    preconditions   TEXT,
+    steps           TEXT NOT NULL,            -- JSON array, copied from the test case
+    expected_result TEXT NOT NULL,
+    severity        TEXT NOT NULL,
+    result          TEXT CHECK (result IN (${list(TEST_RUN_RESULTS)})),  -- NULL = not run yet
+    duration_ms     INTEGER,                  -- time since the previous result in the run
+    notes           TEXT,
+    recorded_at     TEXT,                     -- when the result was first recorded
+    failed_at       TEXT,                     -- when it was marked failed
+    alert_sent_at   TEXT,                     -- when the Discord alert for the failure was sent
+    alert_error     TEXT                      -- why the alert couldn't be sent, if it wasn't
+  );
+  CREATE INDEX IF NOT EXISTS test_run_results_run ON test_run_results (run_id, sort_order);
 `);
 
 upgradeTestCaseStatuses();
 seedOnce('seeded_test_cases', 'test_cases', seedTestCases);
 seedOnce('seeded_test_suites', 'test_suites', seedTestSuites);
 seedOnce('seeded_bugs', 'bugs', seedBugs);
+seedOnce('seeded_test_runs', 'test_runs_v2', seedTestRuns);
 
 // Databases made before a status was added (e.g. "blocked") still have the old list of
 // allowed statuses built into the test_cases table. SQLite can't change that rule in place,
@@ -368,6 +408,79 @@ function seedBugs() {
     }
   })();
   console.log(`Added ${samples.length} sample bugs to the database.`);
+}
+
+// Adds 1 finished sample run of the "Smoke test" suite (or the first suite with cases).
+// The results are true for this app: the login case can't be run yet (no login page),
+// so it's skipped rather than passed. No Discord alerts are sent for sample data.
+function seedTestRuns() {
+  const suite =
+    db.prepare("SELECT id, name FROM test_suites WHERE name = 'Smoke test'").get() ??
+    db.prepare('SELECT s.id, s.name FROM test_suites s WHERE EXISTS (SELECT 1 FROM test_suite_cases l WHERE l.suite_id = s.id) ORDER BY s.id LIMIT 1').get();
+  if (!suite) return;
+  const cases = db
+    .prepare(
+      `SELECT c.* FROM test_suite_cases l JOIN test_cases c ON c.id = l.test_case_id
+       WHERE l.suite_id = ? ORDER BY l.sort_order`
+    )
+    .all(suite.id);
+  if (cases.length === 0) return;
+
+  const known = {
+    'Browser tab shows the app name': { result: 'passed', notes: 'The tab title reads "Bootcamp App".', seconds: 40 },
+    'User can sign in with a valid email and password': {
+      result: 'skipped',
+      notes: "The app doesn't have a login page yet, so this can't be run.",
+      seconds: 15,
+    },
+    'Test case search finds a title by partial text': {
+      result: 'passed',
+      notes: 'Typing "wrong pass" showed only "Sign-in shows an error for a wrong password".',
+      seconds: 55,
+    },
+  };
+  const fallback = [
+    { result: 'passed', notes: null, seconds: 45 },
+    { result: 'skipped', notes: 'Skipped in the sample run.', seconds: 10 },
+  ];
+
+  const start = Date.now() - 45 * 60 * 1000;
+  let clock = start;
+  const iso = (ms) => new Date(ms).toISOString();
+  const results = cases.map((c, i) => {
+    const r = known[c.title] ?? fallback[i % fallback.length];
+    clock += r.seconds * 1000;
+    return { c, ...r, at: iso(clock), duration: r.seconds * 1000 };
+  });
+  const count = (result) => results.filter((r) => r.result === result).length;
+
+  db.transaction(() => {
+    const { lastInsertRowid: runId } = db
+      .prepare(
+        `INSERT INTO test_runs_v2 (suite_id, suite_name, status, pass_count, fail_count, skip_count, start_time, end_time, created_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Sample data')`
+      )
+      .run(
+        suite.id,
+        suite.name,
+        count('failed') > 0 ? 'failed' : 'passed',
+        count('passed'),
+        count('failed'),
+        count('skipped'),
+        iso(start),
+        results[results.length - 1].at
+      );
+    const insert = db.prepare(
+      `INSERT INTO test_run_results (run_id, test_case_id, sort_order, title, preconditions, steps, expected_result, severity,
+         result, duration_ms, notes, recorded_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    results.forEach((r, i) =>
+      insert.run(runId, r.c.id, i + 1, r.c.title, r.c.preconditions, r.c.steps, r.c.expected_result, r.c.severity,
+        r.result, r.duration, r.notes, r.at)
+    );
+  })();
+  console.log('Added 1 sample test run to the database.');
 }
 
 export default db;

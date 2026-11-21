@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { testSuitesApi } from '../api.js';
+import { testRunsApi, testSuitesApi } from '../api.js';
+import NewRunForm from '../components/NewRunForm.jsx';
 import { formatDate, suiteDeleteMessage } from '../format.js';
 import { useDiscardGuard } from '../use-discard-guard.js';
 import AddCasesPanel from '../components/AddCasesPanel.jsx';
@@ -25,8 +26,15 @@ export default function TestSuiteDetailPage() {
   const [removed, setRemoved] = useState(null);
   const undoTimer = useRef(null);
 
-  // modal: null | 'edit' | 'delete' | 'add-cases'
+  // modal: null | 'edit' | 'delete' | 'add-cases' | 'new-run'
   const [modal, setModal] = useState(null);
+  const [startingRun, setStartingRun] = useState(false);
+
+  const handleStartRun = async (createdBy) => {
+    const run = await testRunsApi.create(suite.id, createdBy);
+    setStartingRun(false);
+    navigate(`/test-runs/${run.id}`);
+  };
   const [deleteError, setDeleteError] = useState('');
   const closeModal = useCallback(() => {
     setModal(null);
@@ -138,6 +146,15 @@ export default function TestSuiteDetailPage() {
       <div className="page-header">
         <h1>{suite.name}</h1>
         <div className="header-actions">
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={() => setModal('new-run')}
+            disabled={suite.cases.length === 0}
+            title={suite.cases.length === 0 ? 'Add test cases before starting a run' : undefined}
+          >
+            ▶ New run
+          </button>
           <button type="button" className="button" onClick={() => setModal('edit')}>✎ Edit</button>
           <button type="button" className="button button-danger-outline" onClick={() => setModal('delete')}>🗑 Delete</button>
         </div>
@@ -182,6 +199,18 @@ export default function TestSuiteDetailPage() {
       {modal === 'edit' && (
         <Modal title="Edit test suite" onClose={guard(closeModal)}>
           <TestSuiteForm initial={suite} onSubmit={handleSave} onCancel={guard(closeModal)} onDirtyChange={setDirty} />
+        </Modal>
+      )}
+
+      {modal === 'new-run' && (
+        <Modal title="Start a test run" onClose={closeModal} busy={startingRun}>
+          <NewRunForm
+            suiteName={suite.name}
+            caseCount={suite.cases.length}
+            onStart={handleStartRun}
+            onCancel={closeModal}
+            onBusyChange={setStartingRun}
+          />
         </Modal>
       )}
 

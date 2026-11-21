@@ -37,6 +37,18 @@ Stored in the app's database; a suite groups existing test cases in a set order.
 - **Status**: draft / ready / in-progress / passed / failed
 - **Test cases**: ordered list; a test case can be in several suites, and removing it from a suite doesn't delete it
 
+## Test run fields
+
+A run executes one suite, tracked in the app at `/test-runs`.
+
+- **Suite**: the suite it ran, by name. The name is kept even if the suite is later renamed or deleted.
+- **Cases**: a snapshot of the suite's test cases (title, preconditions, steps, expected result, severity) taken when the run starts. Later edits to the test cases don't change past runs.
+- **Result** per case: passed / failed / skipped, or not run yet. Failing a case requires notes saying what went wrong.
+- **Status**: in-progress until every case has a result; then failed if any case failed, otherwise passed.
+- **Counts, start and end time, run by**, and each case's duration: the time since the previous result in the run.
+
+When a case is marked failed, the server posts an alert to Discord, using `DISCORD_WEBHOOK_URL` from `.env`, which is never committed. The alert has the case title, the failure notes and a link to the run, and the result records whether the alert was sent.
+
 ## Bug report fields
 
 Saved in `tests/bugs/` by `/bug-report`, and tracked in the app at `/bugs`.

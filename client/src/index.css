@@ -799,6 +799,123 @@ td a:hover,
   }
 }
 
+/* --- Test runs --------------------------------------------------------- */
+
+.small {
+  font-size: 0.85rem;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.status-not-run { color: var(--muted); }
+.status-skipped { color: var(--muted); }
+
+.run-progress {
+  display: flex;
+  height: 10px;
+  margin: -1rem 0 1.5rem;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.run-progress-passed { background: #16a34a; }
+.run-progress-failed { background: #dc2626; }
+.run-progress-skipped { background: #9ca3af; }
+
+.run-cases {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.run-case {
+  padding: 0.85rem 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--border);
+  border-radius: 8px;
+}
+
+.run-case-passed { border-left-color: #16a34a; }
+.run-case-failed { border-left-color: #dc2626; }
+.run-case-skipped { border-left-color: #9ca3af; }
+
+.run-case-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.run-case-details {
+  margin: 0.5rem 0 0.75rem 2.25rem;
+  font-size: 0.95rem;
+}
+
+.run-case-details summary {
+  cursor: pointer;
+  color: var(--primary);
+}
+
+.run-case-details p {
+  margin: 0.5rem 0;
+}
+
+.run-case-actions {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-left: 2.25rem;
+}
+
+.result-buttons {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.result-buttons .button[aria-pressed='true'] {
+  color: #fff;
+  font-weight: 600;
+}
+
+.result-buttons .result-passed[aria-pressed='true'] { background: #16a34a; border-color: #16a34a; }
+.result-buttons .result-failed[aria-pressed='true'] { background: #dc2626; border-color: #dc2626; }
+.result-buttons .result-skipped[aria-pressed='true'] { background: #6b7280; border-color: #6b7280; }
+
+.run-case-notes {
+  flex: 1 1 260px;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+
+.run-case .form-error,
+.alert-line {
+  margin: 0.6rem 0 0 2.25rem;
+}
+
+.alert-line {
+  font-size: 0.9rem;
+  color: #15803d;
+}
+
+.alert-line-error {
+  color: #b45309;
+}
+
+.header-actions .button-primary[disabled] {
+  opacity: 0.5;
+}
+
 /* Keep room for the dropdown arrow (the rules above reset the padding). */
 .toolbar select,
 .form select {

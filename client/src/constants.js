@@ -4,3 +4,4 @@ export const TEST_CASE_STATUSES = ['draft', 'ready', 'passed', 'failed', 'blocke
 export const TEST_SUITE_STATUSES = ['draft', 'ready', 'in-progress', 'passed', 'failed'];
 export const BUG_STATUSES = ['open', 'in-progress', 'resolved', 'closed', 'reopened'];
 export const BUG_PRIORITIES = ['high', 'medium', 'low'];
+export const TEST_RUN_STATUSES = ['in-progress', 'passed', 'failed'];

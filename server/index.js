@@ -4,6 +4,15 @@ import { fileURLToPath } from 'node:url';
 import testCasesRouter from './test-cases.js';
 import testSuitesRouter from './test-suites.js';
 import bugsRouter from './bugs.js';
+import testRunsRouter from './test-runs.js';
+
+// Load secrets such as DISCORD_WEBHOOK_URL from the project's .env file (git-ignored).
+// Built into Node; a missing .env just means those features are off.
+try {
+  process.loadEnvFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.env'));
+} catch (err) {
+  if (err.code !== 'ENOENT') console.warn('Could not read .env:', err.message);
+}
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -25,6 +34,7 @@ app.get('/api/health', handleGetHealth);
 app.use('/api/test-cases', testCasesRouter);
 app.use('/api/test-suites', testSuitesRouter);
 app.use('/api/bugs', bugsRouter);
+app.use('/api/test-runs', testRunsRouter);
 
 // Unknown /api address.
 function handleSendNotFound(req, res) {
