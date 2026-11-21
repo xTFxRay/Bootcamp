@@ -6,10 +6,13 @@ const FOCUSABLE =
 // A centered dialog over a dimmed page. Closes on Escape, the ✕ button, or a click outside it.
 // Keyboard focus moves into the dialog when it opens, stays inside while it's open,
 // and goes back to whatever was focused before (usually the button that opened it) when it closes.
-export default function Modal({ title, onClose, children }) {
+// While busy (e.g. its form is saving), Escape, ✕ and clicking outside do nothing, so a save
+// that's already on its way can't look discarded.
+export default function Modal({ title, onClose, busy = false, children }) {
   const dialogRef = useRef(null);
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  const closeRef = useRef(onClose);
+  closeRef.current = busy ? () => {} : onClose;
+  const requestClose = () => closeRef.current();
 
   useEffect(() => {
     const opener = document.activeElement;
@@ -22,7 +25,15 @@ export default function Modal({ title, onClose, children }) {
       (controls[1] ?? controls[0] ?? dialog).focus();
     }
 
-    const handleKey = (e) => e.key === 'Escape' && onCloseRef.current();
+    const handleKey = (e) => {
+      if (e.key === 'Escape') closeRef.current();
+      // If focus fell out of the dialog (e.g. its focused button was disabled while saving),
+      // Tab brings it back inside instead of moving to the page behind.
+      if (e.key === 'Tab' && !dialog.contains(document.activeElement)) {
+        e.preventDefault();
+        (dialog.querySelector(FOCUSABLE) ?? dialog).focus();
+      }
+    };
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
@@ -49,19 +60,29 @@ export default function Modal({ title, onClose, children }) {
   };
 
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && requestClose()}>
       <div
         ref={dialogRef}
         className="modal"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
+        aria-busy={busy}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
       >
         <div className="modal-header">
           <h2 id="modal-title">{title}</h2>
-          <button type="button" className="icon-button" onClick={onClose} aria-label="Close">✕</button>
+          {/* aria-disabled rather than disabled, so a focused ✕ keeps its focus while saving */}
+          <button
+            type="button"
+            className="icon-button"
+            onClick={requestClose}
+            aria-label="Close"
+            aria-disabled={busy}
+          >
+            ✕
+          </button>
         </div>
         {children}
       </div>

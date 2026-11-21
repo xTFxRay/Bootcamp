@@ -9,14 +9,23 @@ export async function request(path, { method = 'GET', body } = {}) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new Error('Could not reach the server.');
+    throw new Error('Could not reach the server. Check your connection and try again.');
   }
 
   let payload;
   try {
     payload = await res.json();
   } catch {
-    throw new Error(`The server sent an unexpected reply (HTTP ${res.status}).`);
+    // Not a reply from our API: usually the server isn't running (in development the page's own
+    // server then answers with an error page). Keep the technical detail in the console, not on screen.
+    console.warn(`Unexpected reply from ${method} /api${path}: HTTP ${res.status}`);
+    const error = new Error(
+      res.status >= 500
+        ? 'Could not reach the server. Check that it is running, then try again.'
+        : "The server isn't responding properly. Try again in a moment."
+    );
+    error.status = res.status;
+    throw error;
   }
   if (!payload.success) {
     const error = new Error(payload.error || 'Something went wrong.');
@@ -34,6 +43,20 @@ export const testCasesApi = {
   create: (testCase) => request('/test-cases', { method: 'POST', body: testCase }),
   update: (id, testCase) => request(`/test-cases/${id}`, { method: 'PUT', body: testCase }),
   remove: (id) => request(`/test-cases/${id}`, { method: 'DELETE' }),
+};
+
+export const bugsApi = {
+  list: (params) => {
+    const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null));
+    return request(`/bugs?${query}`);
+  },
+  get: (id) => request(`/bugs/${id}`),
+  create: (bug) => request('/bugs', { method: 'POST', body: bug }),
+  update: (id, bug) => request(`/bugs/${id}`, { method: 'PUT', body: bug }),
+  remove: (id) => request(`/bugs/${id}`, { method: 'DELETE' }),
+  changeStatus: (id, status, message) =>
+    request(`/bugs/${id}/status`, { method: 'PATCH', body: { status, message } }),
+  addComment: (id, message) => request(`/bugs/${id}/comments`, { method: 'POST', body: { message } }),
 };
 
 export const testSuitesApi = {

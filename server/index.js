@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import testCasesRouter from './test-cases.js';
 import testSuitesRouter from './test-suites.js';
+import bugsRouter from './bugs.js';
 
 const app = express();
 const PORT = process.env.SERVER_PORT || 3001;
@@ -23,6 +24,7 @@ function handleGetHealth(req, res) {
 app.get('/api/health', handleGetHealth);
 app.use('/api/test-cases', testCasesRouter);
 app.use('/api/test-suites', testSuitesRouter);
+app.use('/api/bugs', bugsRouter);
 
 // Unknown /api address.
 function handleSendNotFound(req, res) {
@@ -33,6 +35,28 @@ function handleSendNotFound(req, res) {
 function handleReportError(err, req, res, next) {
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ success: false, data: null, error: 'Request body is not valid JSON' });
+  }
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({
+      success: false,
+      data: null,
+      error: 'The request is too large (over 100 KB). Shorten the text and try again.',
+    });
+  }
+  // Other problems with the request itself (reported by express.json with a 4xx status):
+  // reply with that status and a message that says what to change, not a generic 500.
+  if (err.expose && err.status >= 400 && err.status < 500) {
+    const messages = {
+      'charset.unsupported': "The request uses a character set the server doesn't support. Send it as UTF-8.",
+      'encoding.unsupported': "The request is compressed in a way the server doesn't support. Send it uncompressed.",
+      'request.aborted': 'The request was cut off before it finished. Try again.',
+      'request.size.invalid': "The request's size didn't match its content. Try again.",
+    };
+    return res.status(err.status).json({
+      success: false,
+      data: null,
+      error: messages[err.type] ?? "The request couldn't be read. Check it and try again.",
+    });
   }
   console.error(err);
   res.status(500).json({ success: false, data: null, error: 'Something went wrong on the server' });

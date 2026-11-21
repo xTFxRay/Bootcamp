@@ -69,7 +69,8 @@ function findRow(id) {
 // GET /api/test-cases?page=1&status=ready&search=login&sort=updated|severity&order=asc|desc
 function handleListTestCases(req, res) {
   const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
-  const sortKey = SORTABLE[req.query.sort] ? req.query.sort : 'updated';
+  // Object.hasOwn, so names every object has (like "toString") don't count as sort options.
+  const sortKey = Object.hasOwn(SORTABLE, req.query.sort ?? '') ? req.query.sort : 'updated';
   const order = req.query.order === 'asc' ? 'ASC' : 'DESC';
   const { status, search } = req.query;
 

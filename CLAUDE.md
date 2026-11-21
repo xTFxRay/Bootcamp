@@ -20,7 +20,13 @@ Saved in `tests/manual/`.
 - **Steps**: numbered, one action per step
 - **Expected result**: something a person can check on screen
 - **Severity**: Critical / Major / Minor / Trivial
-- **Status**: draft / ready / passed / failed / skipped
+- **Status**: draft / ready / passed / failed / blocked / skipped
+
+When a test case is run:
+
+- **passed**: every step could be done and the actual result matches the expected result.
+- **failed**: the steps could be done, but the actual result differs from the expected result.
+- **blocked**: the test couldn't be completed, because a precondition couldn't be met, a step couldn't be done, or the expected result couldn't be checked.
 
 ## Test suite fields
 
@@ -33,14 +39,27 @@ Stored in the app's database; a suite groups existing test cases in a set order.
 
 ## Bug report fields
 
-Saved in `tests/bugs/`.
+Saved in `tests/bugs/` by `/bug-report`, and tracked in the app at `/bugs`.
 
 - **Title**
+- **Description**: optional; a short summary of the problem
 - **Steps to reproduce**: numbered, one action per step
 - **Expected**
 - **Actual**
 - **Severity**: Critical / Major / Minor / Trivial
+- **Priority** (app only): high / medium / low; how soon it should be fixed, separate from severity
+- **Environment** (app only): optional; browser, device, and where it happened
 - **Status**: open / in-progress / resolved / closed / reopened
+
+New bugs start as open. Allowed status changes (the server rejects any other):
+
+- open → in-progress, closed
+- in-progress → resolved, closed
+- resolved → closed, reopened
+- closed → reopened
+- reopened → in-progress, closed
+
+Every status change and comment is recorded in the bug's activity history.
 
 ## API response shape
 

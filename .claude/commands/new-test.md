@@ -24,7 +24,7 @@ If text was given after the command, treat it as the answer to question 1 and sk
 6. **Status**: "Is this test ready to run, or still a draft?" Use AskUserQuestion with these options:
    - **ready**: the steps and expected result are final
    - **draft**: something still needs to be filled in or checked
-   - **passed** or **failed**: only if the user has already run it
+   - **passed**, **failed** or **blocked**: only if the user has already run it (see CLAUDE.md for what each means)
 7. **Title**: suggest a short, specific title based on the answers (for example "Home page shows server greeting") and ask the user to accept it or give their own.
 
 ## Confirm before saving
@@ -38,7 +38,7 @@ Show the finished test case in the format below and ask "Save this?" Make any ch
 
 **Feature:** <feature>
 **Severity:** <Critical | Major | Minor | Trivial>
-**Status:** <draft | ready | passed | failed | skipped>
+**Status:** <draft | ready | passed | failed | blocked | skipped>
 **Created:** <today's date, YYYY-MM-DD>
 
 ## Preconditions

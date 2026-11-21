@@ -287,6 +287,7 @@ th {
 .status-in-progress { color: #b45309; }
 .status-passed { color: #15803d; }
 .status-failed { color: #b91c1c; }
+.status-blocked { color: #7e22ce; }
 .status-draft,
 .status-skipped { color: var(--muted); }
 
@@ -667,6 +668,135 @@ td a:hover,
 
 .add-cases-footer .button-primary {
   margin-left: auto;
+}
+
+/* --- Bugs ------------------------------------------------------------- */
+
+.status-open { color: #b91c1c; }
+.status-resolved { color: #15803d; }
+.status-closed { color: var(--muted); }
+.status-reopened { color: #c2410c; }
+
+.priority {
+  font-size: 0.9rem;
+}
+
+.priority-high { color: #b91c1c; font-weight: 600; }
+.priority-medium { color: #1f2937; }
+.priority-low { color: var(--muted); }
+
+.muted {
+  color: var(--muted);
+}
+
+.prewrap {
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.add-step {
+  padding: 0.3rem 0;
+}
+
+.bug-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2rem;
+  align-items: start;
+  margin-top: 1rem;
+}
+
+.bug-section {
+  margin-bottom: 1.75rem;
+}
+
+.bug-section h2,
+.panel h2 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+}
+
+.bug-steps {
+  margin: 0;
+  padding-left: 1.4rem;
+}
+
+.bug-steps li + li {
+  margin-top: 0.3rem;
+}
+
+.panel {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.panel .hint {
+  margin: 0;
+}
+
+.timeline {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0 0 0 1.1rem;
+  border-left: 2px solid var(--border);
+}
+
+.timeline-item {
+  position: relative;
+  padding: 0 0 1rem 0.5rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -1.55rem;
+  top: 0.35rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--muted);
+}
+
+.timeline-status_change::before {
+  border-color: var(--primary);
+}
+
+.timeline-comment::before {
+  border-color: #15803d;
+}
+
+.timeline-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+
+.timeline-when {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.timeline-message {
+  margin: 0.35rem 0 0;
+  padding: 0.5rem 0.75rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.comment-form {
+  max-width: 640px;
+}
+
+@media (max-width: 760px) {
+  .bug-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Keep room for the dropdown arrow (the rules above reset the padding). */
