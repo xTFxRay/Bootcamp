@@ -58,7 +58,17 @@ select {
 
 .topbar nav {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap; /* on narrow screens the links go onto a second line instead of being cut off */
+  gap: 0.25rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+  }
 }
 
 .topbar nav a {
@@ -914,6 +924,156 @@ td a:hover,
 
 .header-actions .button-primary[disabled] {
   opacity: 0.5;
+}
+
+/* --- Dashboard --------------------------------------------------------- */
+
+.dashboard-updated {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 1.75rem;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.metric-value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.metric-detail {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.metric-link {
+  margin-top: auto;
+  padding-top: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.metric-link:hover {
+  text-decoration: underline;
+}
+
+.dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.dashboard-panel .section-header {
+  margin-bottom: 0.75rem;
+}
+
+.dashboard-panel .section-header a {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.activity-feed {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.activity-feed li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-feed li:last-child {
+  border-bottom: none;
+}
+
+.activity-feed a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.activity-title {
+  margin-top: 0.15rem;
+}
+
+.dashboard-message {
+  margin-top: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.dashboard-message h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.dashboard-message a {
+  color: var(--primary);
+}
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eceef1 25%, #f5f6f8 50%, #eceef1 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-line { height: 0.8rem; width: 80%; }
+.skeleton-line.short { width: 40%; }
+.skeleton-block { height: 2.2rem; width: 50%; margin: 0.2rem 0; }
+.skeleton-row { height: 2.4rem; margin-top: 0.6rem; }
+
+@keyframes skeleton-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+}
+
+@media (max-width: 860px) {
+  .dashboard-columns {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Keep room for the dropdown arrow (the rules above reset the padding). */

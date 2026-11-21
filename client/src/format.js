@@ -3,6 +3,18 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', tim
 // "Nov 20, 2026, 5:11 PM" in the viewer's own language and time zone.
 export const formatDate = (iso) => dateFormat.format(new Date(iso));
 
+const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+
+// "just now", "5 minutes ago", "yesterday", "3 days ago".
+export function formatRelative(iso, now = Date.now()) {
+  const seconds = Math.round((Date.parse(iso) - now) / 1000);
+  const abs = Math.abs(seconds);
+  if (abs < 45) return 'just now';
+  if (abs < 3600) return relative.format(Math.round(seconds / 60), 'minute');
+  if (abs < 86400) return relative.format(Math.round(seconds / 3600), 'hour');
+  return relative.format(Math.round(seconds / 86400), 'day');
+}
+
 // 42000 -> "42s", 125000 -> "2m 5s", 3720000 -> "1h 2m".
 export function formatDuration(ms) {
   if (ms == null) return '';

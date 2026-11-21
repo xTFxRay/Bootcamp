@@ -7,6 +7,7 @@ import BugsPage from './pages/BugsPage.jsx';
 import BugDetailPage from './pages/BugDetailPage.jsx';
 import TestRunsPage from './pages/TestRunsPage.jsx';
 import TestRunDetailPage from './pages/TestRunDetailPage.jsx';
+import DashboardPage from './pages/DashboardPage.jsx';
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <span className="brand">Bootcamp App</span>
         <nav>
           <NavLink to="/" end>Home</NavLink>
+          <NavLink to="/dashboard">Dashboard</NavLink>
           <NavLink to="/test-cases">Test cases</NavLink>
           <NavLink to="/test-suites">Test suites</NavLink>
           <NavLink to="/test-runs">Test runs</NavLink>
@@ -23,6 +25,7 @@ export default function App() {
       </header>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCasesPage />} />
         <Route path="/test-suites" element={<TestSuitesPage />} />
         <Route path="/test-suites/:id" element={<TestSuiteDetailPage />} />

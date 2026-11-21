@@ -59,6 +59,10 @@ export const bugsApi = {
   addComment: (id, message) => request(`/bugs/${id}/comments`, { method: 'POST', body: { message } }),
 };
 
+export const dashboardApi = {
+  metrics: () => request('/dashboard/metrics'),
+};
+
 export const testRunsApi = {
   list: (params) => {
     const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null));
