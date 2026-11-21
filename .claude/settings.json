@@ -17,6 +17,17 @@
             "statusMessage": "Checking severity values"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/page_down.sh",
+            "timeout": 60,
+            "statusMessage": "Checking the app is still up after the commit"
+          }
+        ]
       }
     ]
   }
