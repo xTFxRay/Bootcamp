@@ -79,9 +79,17 @@ function handleGetDashboardMetrics(req, res) {
       timestamp: a.created_at,
     }));
 
+  // Totals the page uses to tell "nothing here yet" apart from "all done", and to point at the next step.
+  const totalSuites = db.prepare('SELECT COUNT(*) AS n FROM test_suites').get().n;
+  const totalRuns = db.prepare('SELECT COUNT(*) AS n FROM test_runs_v2').get().n;
+  const totalBugs = Object.values(bugCounts).reduce((sum, n) => sum + n, 0);
+
   ok(res, {
     metrics: {
       totalTestCases,
+      totalSuites,
+      totalRuns,
+      totalBugs,
       passRate, // percent with one decimal, or null when nothing has passed or failed yet
       passRateBasis: { passed, failed, skipped: results.skipped ?? 0 },
       openBugs,

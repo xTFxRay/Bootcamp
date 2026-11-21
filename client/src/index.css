@@ -982,6 +982,82 @@ td a:hover,
   text-decoration: underline;
 }
 
+/* Empty metric card: a short phrase instead of a big number, and the link styled as the next step. */
+.metric-card-empty {
+  background: #fafbfc;
+  border-style: dashed;
+}
+
+.metric-value-empty {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #4b5563;
+  padding: 0.45rem 0 0.2rem;
+}
+
+.metric-link-action {
+  font-weight: 600;
+}
+
+/* "Nothing here yet" box used inside dashboard sections. */
+.empty-state {
+  padding: 1.75rem 1.25rem;
+  text-align: center;
+  background: #fafbfc;
+  border: 1px dashed #d1d5db;
+  border-radius: 8px;
+}
+
+.empty-state-icon {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.empty-state h3 {
+  margin: 0.6rem 0 0.35rem;
+  font-size: 1rem;
+}
+
+.empty-state p {
+  margin: 0 auto 1rem;
+  max-width: 34ch;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.empty-state .button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+/* Shown only when there's no data anywhere yet. */
+.welcome-panel {
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.25rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+}
+
+.welcome-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+}
+
+.welcome-panel ol {
+  margin: 0;
+  padding-left: 1.3rem;
+}
+
+.welcome-panel li + li {
+  margin-top: 0.25rem;
+}
+
+.welcome-panel a {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 .dashboard-columns {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);

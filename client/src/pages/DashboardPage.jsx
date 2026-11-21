@@ -13,15 +13,49 @@ function describeActivity(item) {
   return item.action;
 }
 
-function MetricCard({ label, value, detail, to }) {
+// A headline number. With `empty`, the value is shown as a short muted phrase (not a lone "–")
+// and the link is styled as the next thing to do.
+function MetricCard({ label, value, detail, to, empty = false }) {
   return (
-    <div className="metric-card">
+    <div className={`metric-card${empty ? ' metric-card-empty' : ''}`}>
       <div className="metric-label">{label}</div>
-      <div className="metric-value">{value}</div>
+      <div className={empty ? 'metric-value metric-value-empty' : 'metric-value'}>{value}</div>
       {detail && <div className="metric-detail">{detail}</div>}
-      {to && <Link className="metric-link" to={to.href}>{to.text} →</Link>}
+      {to && <Link className={empty ? 'metric-link metric-link-action' : 'metric-link'} to={to.href}>{to.text} →</Link>}
     </div>
   );
+}
+
+// A friendly "nothing here yet" box: what's missing, why, and a button for the next step.
+function EmptyState({ icon, title, children, action }) {
+  return (
+    <div className="empty-state">
+      <div className="empty-state-icon" aria-hidden="true">{icon}</div>
+      <h3>{title}</h3>
+      <p>{children}</p>
+      {action && <Link className="button button-primary" to={action.href}>{action.text}</Link>}
+    </div>
+  );
+}
+
+// Where to send someone who wants to start a test run, depending on what exists so far.
+function nextStepForRuns(m) {
+  if (m.totalTestCases === 0) {
+    return {
+      text: 'Add test cases, group them into a suite, then start a run from it.',
+      action: { href: '/test-cases', text: 'Add your first test case' },
+    };
+  }
+  if (m.totalSuites === 0) {
+    return {
+      text: 'Group your test cases into a test suite, then start a run from it.',
+      action: { href: '/test-suites', text: 'Create a test suite' },
+    };
+  }
+  return {
+    text: 'Open a suite and click “▶ New run” to start your first run.',
+    action: { href: '/test-suites', text: 'Go to test suites' },
+  };
 }
 
 function DashboardSkeleton() {
@@ -135,26 +169,23 @@ export default function DashboardPage() {
   }
 
   const { metrics, recentRuns, recentActivity } = data;
-  const nothingYet = metrics.totalTestCases === 0 && recentRuns.length === 0 && recentActivity.length === 0;
-
-  if (nothingYet) {
-    return (
-      <main className="page">
-        {header}
-        <div className="dashboard-message">
-          <h2>No data yet</h2>
-          <p>
-            Write some <Link to="/test-cases">test cases</Link>, group them into a{' '}
-            <Link to="/test-suites">test suite</Link> and start a run, or report a <Link to="/bugs">bug</Link>.
-            The numbers show up here as soon as there's something to count.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
+  const nothingYet =
+    metrics.totalTestCases === 0 && metrics.totalRuns === 0 && metrics.totalBugs === 0 && recentActivity.length === 0;
   const basis = metrics.passRateBasis;
   const open = metrics.openBugsByStatus;
+  const runsStep = nextStepForRuns(metrics);
+  // Card links for "no runs yet": the label says where the link really goes.
+  const startRunLink = {
+    href: runsStep.action.href,
+    text:
+      metrics.totalTestCases === 0
+        ? 'Add test cases first'
+        : metrics.totalSuites === 0
+          ? 'Create a test suite first'
+          : 'Start a test run',
+  };
+  // A run exists but nothing finished / no pass-fail yet: point at the runs to finish them.
+  const toRuns = { href: '/test-runs', text: 'Go to test runs' };
 
   return (
     <main className="page">
@@ -166,47 +197,110 @@ export default function DashboardPage() {
         </p>
       )}
 
+      {nothingYet && (
+        <section className="welcome-panel" aria-labelledby="welcome-title">
+          <h2 id="welcome-title">Welcome! Your dashboard fills in as you work</h2>
+          <ol>
+            <li><Link to="/test-cases">Add your first test case</Link>: what to check, step by step.</li>
+            <li><Link to="/test-suites">Group test cases into a suite</Link>, then click “▶ New run” to run them.</li>
+            <li><Link to="/bugs">Report a bug</Link> when something doesn't work.</li>
+          </ol>
+        </section>
+      )}
+
       <div className="metric-grid">
-        <MetricCard
-          label="Test cases"
-          value={metrics.totalTestCases}
-          detail="in the test case library"
-          to={{ href: '/test-cases', text: 'Test cases' }}
-        />
-        <MetricCard
-          label="Pass rate"
-          value={metrics.passRate === null ? '–' : `${metrics.passRate}%`}
-          detail={
-            metrics.passRate === null
-              ? 'No passed or failed results yet'
-              : `${basis.passed} passed, ${basis.failed} failed in test runs${basis.skipped ? ` (${basis.skipped} skipped not counted)` : ''}`
-          }
-        />
-        <MetricCard
-          label="Open bugs"
-          value={metrics.openBugs}
-          detail={`${open.open} open · ${open['in-progress']} in progress · ${open.reopened} reopened`}
-          to={{ href: '/bugs?status=open', text: 'Open bugs' }}
-        />
-        <MetricCard
-          label="Average run time"
-          value={metrics.averageRunDurationMs === null ? '–' : formatDuration(metrics.averageRunDurationMs)}
-          detail={
-            metrics.finishedRuns === 0
-              ? 'No finished runs yet'
-              : `over ${metrics.finishedRuns} finished run${metrics.finishedRuns > 1 ? 's' : ''}, start to finish`
-          }
-        />
+        {metrics.totalTestCases === 0 ? (
+          <MetricCard
+            empty
+            label="Test cases"
+            value="None yet"
+            detail="Test cases describe what to check and the result you expect."
+            to={{ href: '/test-cases', text: 'Add your first test case' }}
+          />
+        ) : (
+          <MetricCard
+            label="Test cases"
+            value={metrics.totalTestCases}
+            detail="in the test case library"
+            to={{ href: '/test-cases', text: 'Test cases' }}
+          />
+        )}
+
+        {metrics.passRate === null ? (
+          <MetricCard
+            empty
+            label="Pass rate"
+            value="No results yet"
+            detail={
+              metrics.totalRuns === 0
+                ? 'It appears once a test run has cases marked passed or failed.'
+                : 'Open a run and mark its cases Pass or Fail to see a pass rate.'
+            }
+            to={metrics.totalRuns === 0 ? startRunLink : toRuns}
+          />
+        ) : (
+          <MetricCard
+            label="Pass rate"
+            value={`${metrics.passRate}%`}
+            detail={`${basis.passed} passed, ${basis.failed} failed in test runs${basis.skipped ? ` (${basis.skipped} skipped not counted)` : ''}`}
+          />
+        )}
+
+        {metrics.totalBugs === 0 ? (
+          <MetricCard
+            empty
+            label="Open bugs"
+            value="None reported"
+            detail="Found something that doesn't work? Write it up so it gets fixed."
+            to={{ href: '/bugs', text: 'Report a bug' }}
+          />
+        ) : metrics.openBugs === 0 ? (
+          <MetricCard
+            label="Open bugs"
+            value="0"
+            detail={`Nothing open: all ${metrics.totalBugs} bug${metrics.totalBugs > 1 ? 's are' : ' is'} resolved or closed.`}
+            to={{ href: '/bugs', text: 'See all bugs' }}
+          />
+        ) : (
+          <MetricCard
+            label="Open bugs"
+            value={metrics.openBugs}
+            detail={`${open.open} open · ${open['in-progress']} in progress · ${open.reopened} reopened`}
+            to={{ href: '/bugs?status=open', text: 'Open bugs' }}
+          />
+        )}
+
+        {metrics.averageRunDurationMs === null ? (
+          <MetricCard
+            empty
+            label="Average run time"
+            value="No finished runs"
+            detail={
+              metrics.totalRuns === 0
+                ? 'It appears once a test run is finished.'
+                : 'A run finishes when every case has a result.'
+            }
+            to={metrics.totalRuns === 0 ? startRunLink : toRuns}
+          />
+        ) : (
+          <MetricCard
+            label="Average run time"
+            value={formatDuration(metrics.averageRunDurationMs)}
+            detail={`over ${metrics.finishedRuns} finished run${metrics.finishedRuns > 1 ? 's' : ''}, start to finish`}
+          />
+        )}
       </div>
 
       <div className="dashboard-columns">
         <section className="dashboard-panel" aria-labelledby="recent-runs">
           <div className="section-header">
             <h2 id="recent-runs">Recent test runs</h2>
-            <Link to="/test-runs">All runs →</Link>
+            {recentRuns.length > 0 && <Link to="/test-runs">All runs →</Link>}
           </div>
           {recentRuns.length === 0 ? (
-            <p className="muted">No test runs yet. Start one from a suite's page with “▶ New run”.</p>
+            <EmptyState icon="🧪" title="No test runs yet" action={runsStep.action}>
+              {runsStep.text}
+            </EmptyState>
           ) : (
             <div className="table-wrap">
               <table>
@@ -238,10 +332,12 @@ export default function DashboardPage() {
         <section className="dashboard-panel" aria-labelledby="recent-activity">
           <div className="section-header">
             <h2 id="recent-activity">Recent bug activity</h2>
-            <Link to="/bugs">All bugs →</Link>
+            {recentActivity.length > 0 && <Link to="/bugs">All bugs →</Link>}
           </div>
           {recentActivity.length === 0 ? (
-            <p className="muted">No bug activity yet.</p>
+            <EmptyState icon="🐞" title="No bug activity yet" action={{ href: '/bugs', text: 'Report a bug' }}>
+              When a bug is reported, changes status or gets a comment, it shows up here.
+            </EmptyState>
           ) : (
             <ol className="activity-feed">
               {recentActivity.map((item) => (
