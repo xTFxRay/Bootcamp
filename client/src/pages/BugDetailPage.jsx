@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { bugsApi } from '../api.js';
 import { formatDate } from '../format.js';
 import { useDiscardGuard } from '../use-discard-guard.js';

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { bugsApi } from '../api.js';
 import { BUG_PRIORITIES, BUG_STATUSES, SEVERITIES } from '../constants.js';
 import { formatDate } from '../format.js';

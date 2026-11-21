@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router';
 import { testSuitesApi } from '../api.js';
 import { formatDate, suiteDeleteMessage } from '../format.js';
 import { useDiscardGuard } from '../use-discard-guard.js';

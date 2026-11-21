@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
+import { useBlocker } from 'react-router';
 
 // While `active` is true, asks before the user leaves the page and loses unsaved text:
 // - in-app links and the browser's Back and Forward buttons get a "Leave this page?" prompt;
