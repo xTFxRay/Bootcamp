@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { dashboardApi } from '../api.js';
 import { formatDate, formatDuration, formatRelative } from '../format.js';
+import { BugsPerWeekChart, CoverageDonutChart, PassRateTrendChart } from '../components/DashboardCharts.jsx';
 
 const REFRESH_MS = 30_000;
 
@@ -96,9 +97,9 @@ export default function DashboardPage() {
     const requestId = ++latestRequest.current; // ignore replies that arrive after a newer request
     setRefreshing(true);
     try {
-      const next = await dashboardApi.metrics();
+      const [next, trends] = await Promise.all([dashboardApi.metrics(), dashboardApi.trends()]);
       if (requestId !== latestRequest.current) return;
-      setData(next);
+      setData({ ...next, trends });
       hasData.current = true;
       setError('');
       setRefreshError('');
@@ -168,7 +169,7 @@ export default function DashboardPage() {
     );
   }
 
-  const { metrics, recentRuns, recentActivity } = data;
+  const { metrics, recentRuns, recentActivity, trends } = data;
   const nothingYet =
     metrics.totalTestCases === 0 && metrics.totalRuns === 0 && metrics.totalBugs === 0 && recentActivity.length === 0;
   const basis = metrics.passRateBasis;
@@ -290,6 +291,19 @@ export default function DashboardPage() {
           />
         )}
       </div>
+
+      {!nothingYet && (
+        <section aria-labelledby="trends-title">
+          <div className="section-header">
+            <h2 id="trends-title">Trends</h2>
+          </div>
+          <div className="chart-grid-layout">
+            <PassRateTrendChart runs={trends.passRateTrend} emptyAction={startRunLink} />
+            <BugsPerWeekChart weeks={trends.bugsPerWeek} />
+            <CoverageDonutChart coverage={trends.coverage} />
+          </div>
+        </section>
+      )}
 
       <div className="dashboard-columns">
         <section className="dashboard-panel" aria-labelledby="recent-runs">

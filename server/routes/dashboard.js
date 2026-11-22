@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import db from '../db.js';
+import db, { TEST_CASE_STATUSES } from '../db.js';
 import { ok } from '../api-response.js';
 
 // Dashboard endpoint, mounted at /api/dashboard.
@@ -103,6 +103,82 @@ function handleGetDashboardMetrics(req, res) {
   });
 }
 
+// --- Trends (the three dashboard charts) ------------------------------------
+
+const TREND_RUNS = 10;
+const TREND_WEEKS = 8;
+const DAY_MS = 86_400_000;
+
+// Monday 00:00 UTC of the week that contains `date`.
+function weekStartUtc(date) {
+  const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const daysSinceMonday = (d.getUTCDay() + 6) % 7;
+  return new Date(d.getTime() - daysSinceMonday * DAY_MS);
+}
+
+// GET /api/dashboard/trends
+// passRateTrend: the last 10 test runs, oldest first, each with its pass rate (passed ÷ (passed + failed)).
+// bugsPerWeek:   bugs opened and bugs closed in each of the last 8 weeks (Monday to Sunday, UTC), oldest first.
+// coverage:      how many test cases have each status, every status listed even when it's 0.
+function handleGetDashboardTrends(req, res) {
+  const passRateTrend = db
+    .prepare(
+      `SELECT id, suite_name, status, start_time, pass_count, fail_count, skip_count
+       FROM test_runs_v2 ORDER BY start_time DESC, id DESC LIMIT ?`
+    )
+    .all(TREND_RUNS)
+    .reverse()
+    .map((r) => {
+      const decided = r.pass_count + r.fail_count;
+      return {
+        runId: r.id,
+        suiteName: r.suite_name,
+        status: r.status,
+        date: r.start_time,
+        passed: r.pass_count,
+        failed: r.fail_count,
+        skipped: r.skip_count,
+        passRate: decided ? Math.round((r.pass_count / decided) * 1000) / 10 : null, // null: nothing passed or failed
+      };
+    });
+
+  // Opened = the bug was reported. Closed = its status was changed to "closed" (a bug closed,
+  // reopened and closed again counts in each week it was closed).
+  const thisWeek = weekStartUtc(new Date());
+  const firstWeek = new Date(thisWeek.getTime() - (TREND_WEEKS - 1) * 7 * DAY_MS);
+  const weeks = Array.from({ length: TREND_WEEKS }, (_, i) => ({
+    weekStart: new Date(firstWeek.getTime() + i * 7 * DAY_MS).toISOString().slice(0, 10),
+    opened: 0,
+    closed: 0,
+  }));
+  const bucket = (iso) => Math.floor((Date.parse(iso) - firstWeek.getTime()) / (7 * DAY_MS));
+  const since = firstWeek.toISOString();
+  for (const { created_at } of db.prepare('SELECT created_at FROM bugs WHERE created_at >= ?').all(since)) {
+    const i = bucket(created_at);
+    if (i >= 0 && i < TREND_WEEKS) weeks[i].opened += 1;
+  }
+  const closedRows = db
+    .prepare(`SELECT created_at FROM bug_activity WHERE action = 'status_change' AND new_value = 'closed' AND created_at >= ?`)
+    .all(since);
+  for (const { created_at } of closedRows) {
+    const i = bucket(created_at);
+    if (i >= 0 && i < TREND_WEEKS) weeks[i].closed += 1;
+  }
+
+  const counts = Object.fromEntries(
+    db.prepare('SELECT status, COUNT(*) AS n FROM test_cases GROUP BY status').all().map((r) => [r.status, r.n])
+  );
+  const coverage = TEST_CASE_STATUSES.map((status) => ({ status, count: counts[status] ?? 0 }));
+
+  ok(res, {
+    passRateTrend,
+    bugsPerWeek: weeks,
+    coverage,
+    generatedAt: new Date().toISOString(),
+  });
+}
+
 router.get('/metrics', handleGetDashboardMetrics);
+router.get('/trends', handleGetDashboardTrends);
 
 export default router;

@@ -72,6 +72,7 @@ export const reportsApi = {
 
 export const dashboardApi = {
   metrics: () => request('/dashboard/metrics'),
+  trends: () => request('/dashboard/trends'),
 };
 
 export const testRunsApi = {
