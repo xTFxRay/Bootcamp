@@ -28,6 +28,12 @@ When a test case is run:
 - **failed**: the steps could be done, but the actual result differs from the expected result.
 - **blocked**: the test couldn't be completed, because a precondition couldn't be met, a step couldn't be done, or the expected result couldn't be checked.
 
+CSV import (`/test-cases/import`) checks every row before anything is saved, then imports the valid rows and skips the rest with a report.
+
+- Required columns: Title, Severity, Steps, Expected result. Optional: Preconditions, Status (empty means draft). Header names ignore case, spaces, `_` and `-`; other columns are ignored.
+- Steps: one per line inside the cell, or separated by `|`; leading numbering is removed.
+- Files: comma, semicolon or tab separated; UTF-8, UTF-16 or Windows-1257/1252; up to 2 MB and 1,000 rows.
+
 ## Test suite fields
 
 Stored in the app's database; a suite groups existing test cases in a set order.

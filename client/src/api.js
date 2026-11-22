@@ -1,12 +1,13 @@
 // Talks to the server. Every reply is { success, data, error } (see CLAUDE.md):
 // returns data on success, throws an Error with the server's message otherwise.
-export async function request(path, { method = 'GET', body } = {}) {
+// `file` sends a File as the raw request body instead of JSON (used by the CSV import).
+export async function request(path, { method = 'GET', body, file } = {}) {
   let res;
   try {
     res = await fetch(`/api${path}`, {
       method,
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
+      headers: file ? { 'Content-Type': file.type || 'text/csv' } : body ? { 'Content-Type': 'application/json' } : undefined,
+      body: file ?? (body ? JSON.stringify(body) : undefined),
     });
   } catch {
     throw new Error('Could not reach the server. Check your connection and try again.');
@@ -43,6 +44,11 @@ export const testCasesApi = {
   create: (testCase) => request('/test-cases', { method: 'POST', body: testCase }),
   update: (id, testCase) => request(`/test-cases/${id}`, { method: 'PUT', body: testCase }),
   remove: (id) => request(`/test-cases/${id}`, { method: 'DELETE' }),
+  // encoding: '' to detect it, or 'utf-8' / 'windows-1257' / 'windows-1252'.
+  previewImport: (file, encoding) =>
+    request(`/test-cases/import/preview${encoding ? `?encoding=${encoding}` : ''}`, { method: 'POST', file }),
+  importFile: (file, encoding) =>
+    request(`/test-cases/import${encoding ? `?encoding=${encoding}` : ''}`, { method: 'POST', file }),
 };
 
 export const bugsApi = {

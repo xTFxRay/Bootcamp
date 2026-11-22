@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from 'react-router';
 import HomePage from './pages/HomePage.jsx';
 import TestCasesPage from './pages/TestCasesPage.jsx';
+import TestCaseImportPage from './pages/TestCaseImportPage.jsx';
 import TestSuitesPage from './pages/TestSuitesPage.jsx';
 import TestSuiteDetailPage from './pages/TestSuiteDetailPage.jsx';
 import BugsPage from './pages/BugsPage.jsx';
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCasesPage />} />
+        <Route path="/test-cases/import" element={<TestCaseImportPage />} />
         <Route path="/test-suites" element={<TestSuitesPage />} />
         <Route path="/test-suites/:id" element={<TestSuiteDetailPage />} />
         <Route path="/test-runs" element={<TestRunsPage />} />

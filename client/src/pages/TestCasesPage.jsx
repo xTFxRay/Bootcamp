@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { testCasesApi } from '../api.js';
 import { TEST_CASE_STATUSES } from '../constants.js';
 import Modal from '../components/Modal.jsx';
@@ -102,9 +103,12 @@ export default function TestCasesPage() {
     <main className="page">
       <div className="page-header">
         <h1>Test cases</h1>
-        <button type="button" className="button button-primary" onClick={() => setModal({ type: 'add' })}>
-          + New test case
-        </button>
+        <div className="header-actions">
+          <Link className="button" to="/test-cases/import">Import CSV</Link>
+          <button type="button" className="button button-primary" onClick={() => setModal({ type: 'add' })}>
+            + New test case
+          </button>
+        </div>
       </div>
 
       <div className="toolbar">
