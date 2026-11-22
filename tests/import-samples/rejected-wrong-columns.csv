@@ -1,0 +1,4 @@
+﻿Name,Priority,Description,Owner
+User can sign in,High,Open the sign-in page and log in,Anna
+Bug list can be filtered,Medium,Filter bugs by status,Jānis
+Report can be downloaded,Low,Download a report as HTML,Anna

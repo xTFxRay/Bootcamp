@@ -41,9 +41,15 @@ export const testCasesApi = {
     const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null));
     return request(`/test-cases?${query}`);
   },
+  get: (id) => request(`/test-cases/${id}`),
   create: (testCase) => request('/test-cases', { method: 'POST', body: testCase }),
   update: (id, testCase) => request(`/test-cases/${id}`, { method: 'PUT', body: testCase }),
   remove: (id) => request(`/test-cases/${id}`, { method: 'DELETE' }),
+  // A plain link (the browser downloads the file): every test case matching the filters, in the list's order.
+  exportCsvUrl: (params) => {
+    const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null));
+    return `/api/test-cases/export/csv?${query}`;
+  },
   // encoding: '' to detect it, or 'utf-8' / 'windows-1257' / 'windows-1252'.
   previewImport: (file, encoding) =>
     request(`/test-cases/import/preview${encoding ? `?encoding=${encoding}` : ''}`, { method: 'POST', file }),
@@ -74,6 +80,15 @@ export const reportsApi = {
   create: (runId) => request('/reports', { method: 'POST', body: { runId } }),
   // A plain link, not a fetch: the browser downloads the file itself.
   exportHtmlUrl: (id) => `/api/reports/${id}/export/html`,
+};
+
+export const settingsApi = {
+  get: () => request('/settings'),
+  update: (changes) => request('/settings', { method: 'PUT', body: changes }),
+};
+
+export const searchApi = {
+  search: (q) => request(`/search?q=${encodeURIComponent(q)}`),
 };
 
 export const dashboardApi = {

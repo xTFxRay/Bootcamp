@@ -1,0 +1,11 @@
+﻿Title,Severity,Steps,Expected result,Preconditions,Status,Owner
+Test run can be started from a suite,Major,"1. Open a suite
+2. Click ""▶ New run""",The run page opens with every case not run yet,The suite has test cases,ready,Anna
+Bug status can be changed to closed,High,Open a bug | Change status to closed,The status shows closed,,,Anna
+,Minor,Open the Dashboard,The charts are shown,,,Jānis
+Failed result needs notes,Major,,,,,Jānis
+Test case can be deleted,Minor,Open Test cases | Click ⋯ | Click Delete,The test case is gone from the list,,finished,
+Browser tab shows the app name,Trivial,Open the app,"The tab title reads ""Bootcamp App""",,,
+Test run can be started from a suite,Major,"Open a suite | Click ""▶ New run""",The run page opens,,,
+
+Search box ignores upper and lower case,Minor,"Type ""LOGIN"" in the search box","Test cases with ""login"" are listed",,,,extra value

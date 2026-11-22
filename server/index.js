@@ -7,6 +7,8 @@ import bugsRouter from './bugs.js';
 import testRunsRouter from './test-runs.js';
 import dashboardRouter from './routes/dashboard.js';
 import reportsRouter from './routes/reports.js';
+import settingsRouter from './routes/settings.js';
+import searchRouter from './routes/search.js';
 
 // Load secrets such as DISCORD_WEBHOOK_URL from the project's .env file (git-ignored).
 // Built into Node; a missing .env just means those features are off.
@@ -17,7 +19,8 @@ try {
 }
 
 const app = express();
-const PORT = process.env.SERVER_PORT || 3001;
+// Hosts like Render say which port to use in PORT; locally it's SERVER_PORT or 3001.
+const PORT = process.env.PORT || process.env.SERVER_PORT || 3001;
 
 app.use(express.json());
 
@@ -39,6 +42,8 @@ app.use('/api/bugs', bugsRouter);
 app.use('/api/test-runs', testRunsRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/reports', reportsRouter);
+app.use('/api/settings', settingsRouter);
+app.use('/api/search', searchRouter);
 
 // Unknown /api address.
 function handleSendNotFound(req, res) {

@@ -1,7 +1,9 @@
 // Posts alerts to a Discord channel through the webhook in .env (DISCORD_WEBHOOK_URL).
 // The URL is a secret: it's read from the environment only and never logged or sent to the page.
 
-const APP_URL = () => (process.env.APP_URL || 'http://localhost:5173').replace(/\/+$/, '');
+// Link in alerts: APP_URL if set, else the public address Render gives the service, else local dev.
+const APP_URL = () =>
+  (process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173').replace(/\/+$/, '');
 const MAX_LENGTH = 2000; // Discord's limit for a message
 
 // Sends the alert for a failed test case. Never throws: returns { ok: true } or { ok: false, error }.

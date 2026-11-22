@@ -142,7 +142,8 @@ export function analyzeCsv(buf, chosenEncoding, { checkRow, existingTitles }) {
   const titleKey = (t) => t.trim().toLowerCase();
   const seenInFile = new Map(); // title -> first row number
   const rows = filled.map(({ record, row }) => {
-    const cell = (key) => (key in columnOf ? (record[columnOf[key]] ?? '') : '');
+    // A leading ' before = + - @ is the export's guard against spreadsheet formulas: remove it.
+    const cell = (key) => (key in columnOf ? (record[columnOf[key]] ?? '') : '').replace(/^'(?=[=+\-@\t])/, '');
     const rawSeverity = cell('severity').trim();
     const rawStatus = cell('status').trim();
     const body = {

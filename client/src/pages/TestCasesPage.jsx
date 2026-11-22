@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { testCasesApi } from '../api.js';
 import { TEST_CASE_STATUSES } from '../constants.js';
 import Modal from '../components/Modal.jsx';
@@ -28,6 +28,22 @@ export default function TestCasesPage() {
     setModal(null);
     setDeleteError('');
   }, []);
+
+  // Quick search opens a test case with ?edit=ID: show it in the edit dialog, then tidy the address.
+  const [params, setParams] = useSearchParams();
+  const editId = params.get('edit');
+  useEffect(() => {
+    if (!editId) return;
+    let cancelled = false;
+    testCasesApi
+      .get(editId)
+      .then((testCase) => !cancelled && setModal({ type: 'edit', testCase }))
+      .catch((err) => !cancelled && setLoadError(`Couldn't open test case #${editId}: ${err.message}`))
+      .finally(() => !cancelled && setParams((p) => { const next = new URLSearchParams(p); next.delete('edit'); return next; }, { replace: true }));
+    return () => {
+      cancelled = true;
+    };
+  }, [editId, setParams]);
 
   // Wait until typing pauses before searching.
   useEffect(() => {
@@ -104,6 +120,18 @@ export default function TestCasesPage() {
       <div className="page-header">
         <h1>Test cases</h1>
         <div className="header-actions">
+          {result && result.total > 0 ? (
+            <a
+              className="button"
+              href={testCasesApi.exportCsvUrl({ status, search: search.trim(), sort: sort.key, order: sort.order })}
+              download
+              title={`Downloads ${filtered ? 'the' : 'all'} ${result.total} test ${result.total === 1 ? 'case' : 'cases'}${filtered ? ' matching the current filters' : ''}, in the order shown`}
+            >
+              Download CSV{filtered ? ` (${result.total})` : ''}
+            </a>
+          ) : (
+            <button type="button" className="button" disabled title="No test cases to download">Download CSV</button>
+          )}
           <Link className="button" to="/test-cases/import">Import CSV</Link>
           <button type="button" className="button button-primary" onClick={() => setModal({ type: 'add' })}>
             + New test case

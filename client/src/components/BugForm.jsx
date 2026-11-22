@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { BUG_PRIORITIES, SEVERITIES } from '../constants.js';
+import { useSettings } from '../settings.jsx';
 
 // Steps get their own ids, so removing one never mixes up which input has focus.
 let nextStepId = 1;
@@ -10,10 +11,12 @@ const newStep = (text = '') => ({ id: nextStepId++, text });
 // onDirtyChange(true/false) reports whether anything differs from how the form started.
 // onBusyChange(true/false) reports while a save is on its way, so the dialog can't be closed then.
 export default function BugForm({ initial, onSubmit, onCancel, onDirtyChange, onBusyChange }) {
+  // A new bug starts with the severity chosen in Settings ("Default severity for new bugs").
+  const defaultSeverity = useSettings()?.settings?.defaultSeverityForNewBugs ?? '';
   const [start] = useState(() => ({
     title: initial?.title ?? '',
     description: initial?.description ?? '',
-    severity: initial?.severity ?? '',
+    severity: initial?.severity ?? defaultSeverity,
     priority: initial?.priority ?? 'medium',
     environment: initial?.environment ?? '',
     steps: (initial?.steps?.length ? initial.steps : ['']).map((text) => newStep(text)),

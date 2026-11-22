@@ -1,0 +1,20 @@
+# Render Blueprint: one free web service that runs the Express server, which also serves the
+# built React app. Render reads this file when you open the deploy link in the README (DEPLOY).
+services:
+  - type: web
+    name: bootcamp-app
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    # --include=dev: the React build needs Vite, which is a development dependency.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 24.13.0
+      # Optional. Render asks for it when the service is created; leave it empty to turn
+      # Discord alerts off. It's a secret, so it lives in Render, never in this file.
+      - key: DISCORD_WEBHOOK_URL
+        sync: false

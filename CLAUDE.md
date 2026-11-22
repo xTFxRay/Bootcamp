@@ -79,6 +79,18 @@ New bugs start as open. Allowed status changes (the server rejects any other):
 
 Every status change and comment is recorded in the bug's activity history.
 
+## Settings
+
+Stored in the `user_preferences` table, one row per user (only user 1 for now), at `/settings`; `GET /api/settings`, `PUT /api/settings` (send only the fields to change).
+
+- **Theme**: light / dark / system (default system). Colours in `client/src/index.css` must use the colour tokens (`var(--surface)`, `var(--text)`, ...), never fixed hex values, so both themes work.
+- **Default severity for new bugs**: Critical / Major / Minor / Trivial (default Minor); preselected in the Report a bug form.
+- **Default page size** (10 / 20 / 50 / 100, default 20), **time zone** (default: the browser's) and **auto-generate report after run** (default on) are saved but not used by the app yet.
+
+## Keyboard shortcuts
+
+Defined only in `client/src/shortcuts.js`: the key handler runs them from that list and the `?` help dialog is drawn from it. Plain-key shortcuts never fire while typing in a field or while a dialog is open. Quick search (⌘K / Ctrl+K) uses `GET /api/search?q=`, which returns up to 5 test cases, bugs and suites.
+
 ## QA tooling
 
 The slash commands, skills, subagents and hooks used here (test cases, bug reports, daily updates, QA reviews, test runs, response-shape and severity checks, the after-commit page check) live in the `qa-plugin` plugin, not in this repo. It is enabled for this project in `.claude/settings.local.json` and read from the plugin folder next to this project. Its commands start with `/qa-plugin:`.

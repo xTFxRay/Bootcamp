@@ -1,0 +1,11 @@
+﻿Title,Severity,Steps,Expected result,Preconditions,Status
+Bug list can be filtered by status,Major,"1. Open the Bugs page
+2. Choose ""resolved"" in the status filter",Only bugs with status resolved are listed,At least one bug is resolved,ready
+New test suite appears in the list after saving,major,"Open Test suites | Click ""+ New test suite"" | Fill in name and feature | Click Save",The new suite is shown at the top of the list,,draft
+Dashboard shows the number of open bugs,Minor,Open the Dashboard,"The ""Open bugs"" card shows the same number as the Bugs page with status open",,
+Report can be downloaded as an HTML file,Minor,"1. Open Reports
+2. Open the first report
+3. Click ""Download HTML""",A file named test-report-<number>-....html is downloaded,At least one report exists,ready
+Lietotājs var pieteikties ar derīgu e-pastu,CRITICAL,"1. Atver pieteikšanās lapu
+2. Ievada e-pastu un paroli
+3. Spiež ""Ienākt""",Atveras sākumlapa ar lietotāja vārdu,Lietotājs ir reģistrēts,draft

@@ -13,6 +13,8 @@ export const BUG_PRIORITIES = ['high', 'medium', 'low'];
 export const BUG_ACTIVITY_ACTIONS = ['created', 'status_change', 'comment'];
 export const TEST_RUN_STATUSES = ['in-progress', 'passed', 'failed'];
 export const TEST_RUN_RESULTS = ['passed', 'failed', 'skipped'];
+export const THEMES = ['light', 'dark', 'system'];
+export const PAGE_SIZES = [10, 20, 50, 100];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.DB_PATH || path.join(__dirname, 'data', 'app.db');
@@ -145,6 +147,17 @@ db.exec(`
     generated_at  TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS reports_generated ON reports (generated_at);
+
+  -- One row per user (for now there is only user 1). Missing row = all defaults.
+  CREATE TABLE IF NOT EXISTS user_preferences (
+    user_id                        INTEGER PRIMARY KEY,
+    theme                          TEXT NOT NULL DEFAULT 'system' CHECK (theme IN (${list(THEMES)})),
+    default_severity_for_new_bugs  TEXT NOT NULL DEFAULT 'Minor' CHECK (default_severity_for_new_bugs IN (${list(SEVERITIES)})),
+    default_page_size              INTEGER NOT NULL DEFAULT 20 CHECK (default_page_size IN (${PAGE_SIZES.join(', ')})),
+    timezone                       TEXT,      -- IANA name like "Europe/Riga"; NULL = use the browser's time zone
+    auto_generate_report_after_run INTEGER NOT NULL DEFAULT 1 CHECK (auto_generate_report_after_run IN (0, 1)),
+    updated_at                     TEXT NOT NULL
+  );
 `);
 
 upgradeTestCaseStatuses();
