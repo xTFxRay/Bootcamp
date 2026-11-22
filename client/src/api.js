@@ -59,6 +59,17 @@ export const bugsApi = {
   addComment: (id, message) => request(`/bugs/${id}/comments`, { method: 'POST', body: { message } }),
 };
 
+export const reportsApi = {
+  list: (params = {}) => {
+    const query = new URLSearchParams(Object.entries(params).filter(([, v]) => v !== '' && v != null));
+    return request(`/reports?${query}`);
+  },
+  get: (id) => request(`/reports/${id}`),
+  create: (runId) => request('/reports', { method: 'POST', body: { runId } }),
+  // A plain link, not a fetch: the browser downloads the file itself.
+  exportHtmlUrl: (id) => `/api/reports/${id}/export/html`,
+};
+
 export const dashboardApi = {
   metrics: () => request('/dashboard/metrics'),
 };

@@ -8,6 +8,8 @@ import BugDetailPage from './pages/BugDetailPage.jsx';
 import TestRunsPage from './pages/TestRunsPage.jsx';
 import TestRunDetailPage from './pages/TestRunDetailPage.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import ReportsPage from './pages/ReportsPage.jsx';
+import ReportDetailPage from './pages/ReportDetailPage.jsx';
 
 export default function App() {
   return (
@@ -20,6 +22,7 @@ export default function App() {
           <NavLink to="/test-cases">Test cases</NavLink>
           <NavLink to="/test-suites">Test suites</NavLink>
           <NavLink to="/test-runs">Test runs</NavLink>
+          <NavLink to="/reports">Reports</NavLink>
           <NavLink to="/bugs">Bugs</NavLink>
         </nav>
       </header>
@@ -31,6 +34,8 @@ export default function App() {
         <Route path="/test-suites/:id" element={<TestSuiteDetailPage />} />
         <Route path="/test-runs" element={<TestRunsPage />} />
         <Route path="/test-runs/:id" element={<TestRunDetailPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/reports/:id" element={<ReportDetailPage />} />
         <Route path="/bugs" element={<BugsPage />} />
         <Route path="/bugs/:id" element={<BugDetailPage />} />
         <Route path="*" element={<main className="page"><h1>Page not found</h1></main>} />

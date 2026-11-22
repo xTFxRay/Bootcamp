@@ -1172,3 +1172,46 @@ td a:hover,
     grid-template-columns: 1fr;
   }
 }
+
+/* --- Test reports ---------------------------------------------------------- */
+a.button {
+  display: inline-block;
+  text-decoration: none;
+  font: inherit;
+}
+
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.75rem;
+  margin: 1.25rem 0 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .report-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Fixed column shares, so long notes wrap instead of squeezing the Notes column. */
+.report-table { width: 100%; table-layout: fixed; }
+.report-table th:nth-child(1) { width: 5%; }
+.report-table th:nth-child(2) { width: 29%; }
+.report-table th:nth-child(3) { width: 13%; }
+.report-table th:nth-child(4) { width: 12%; }
+.report-table th:nth-child(5) { width: 8%; }
+.report-table th:nth-child(6) { width: 33%; }
+.report-table .title-cell, .report-table .prewrap { overflow-wrap: anywhere; }
+
+/* File > Print (or "Print / Save as PDF") prints just the report: no menu, no buttons. */
+@media print {
+  @page { size: A4; margin: 16mm 14mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; font-size: 11pt; }
+  .topbar, .no-print { display: none !important; }
+  .page { max-width: none; padding: 0; margin: 0; }
+  .report-page .hint { color: #4b5563; }
+  .report-summary { grid-template-columns: repeat(5, 1fr); }
+  .table-wrap { overflow: visible; border: none; box-shadow: none; }
+  .metric-card, tr { break-inside: avoid; page-break-inside: avoid; }
+  thead { display: table-header-group; }
+  a { color: inherit; text-decoration: none; }
+}

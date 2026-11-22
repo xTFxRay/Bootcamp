@@ -6,6 +6,7 @@ import testSuitesRouter from './test-suites.js';
 import bugsRouter from './bugs.js';
 import testRunsRouter from './test-runs.js';
 import dashboardRouter from './routes/dashboard.js';
+import reportsRouter from './routes/reports.js';
 
 // Load secrets such as DISCORD_WEBHOOK_URL from the project's .env file (git-ignored).
 // Built into Node; a missing .env just means those features are off.
@@ -37,6 +38,7 @@ app.use('/api/test-suites', testSuitesRouter);
 app.use('/api/bugs', bugsRouter);
 app.use('/api/test-runs', testRunsRouter);
 app.use('/api/dashboard', dashboardRouter);
+app.use('/api/reports', reportsRouter);
 
 // Unknown /api address.
 function handleSendNotFound(req, res) {

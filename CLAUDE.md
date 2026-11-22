@@ -89,6 +89,8 @@ Every endpoint returns:
 - `data`: any; `null` on failure
 - `error`: string message on failure, `null` on success
 
+Exception: file-download endpoints (e.g. `GET /api/reports/:id/export/html`) send the file itself on success, with a `Content-Disposition: attachment` header; their errors still use the envelope. Mark the line that sends the file with the comment `response-shape: file-download` so the response-shape hook accepts it.
+
 ## File naming
 
 - Files: kebab-case (`bug-report.md`, `user-routes.js`)

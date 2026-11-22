@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createReportFromRun } from './report-snapshot.js';
 
 // Values allowed by CLAUDE.md.
 export const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial'];
@@ -127,6 +128,23 @@ db.exec(`
     alert_error     TEXT                      -- why the alert couldn't be sent, if it wasn't
   );
   CREATE INDEX IF NOT EXISTS test_run_results_run ON test_run_results (run_id, sort_order);
+
+  -- A test report: a frozen snapshot of a run's results when the report was generated.
+  -- run_id becomes NULL if the run is later deleted; the report itself is kept.
+  CREATE TABLE IF NOT EXISTS reports (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id        INTEGER REFERENCES test_runs_v2(id) ON DELETE SET NULL,
+    suite_name    TEXT NOT NULL,
+    run_date      TEXT NOT NULL,            -- when the run started
+    run_status    TEXT NOT NULL,            -- the run's status when the report was made
+    total_count   INTEGER NOT NULL,
+    passed_count  INTEGER NOT NULL,
+    failed_count  INTEGER NOT NULL,
+    skipped_count INTEGER NOT NULL,
+    results       TEXT NOT NULL,            -- JSON array of per-case outcomes
+    generated_at  TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS reports_generated ON reports (generated_at);
 `);
 
 upgradeTestCaseStatuses();
@@ -134,6 +152,7 @@ seedOnce('seeded_test_cases', 'test_cases', seedTestCases);
 seedOnce('seeded_test_suites', 'test_suites', seedTestSuites);
 seedOnce('seeded_bugs', 'bugs', seedBugs);
 seedOnce('seeded_test_runs', 'test_runs_v2', seedTestRuns);
+seedOnce('seeded_reports', 'reports', seedReports);
 
 // Databases made before a status was added (e.g. "blocked") still have the old list of
 // allowed statuses built into the test_cases table. SQLite can't change that rule in place,
@@ -481,6 +500,16 @@ function seedTestRuns() {
     );
   })();
   console.log('Added 1 sample test run to the database.');
+}
+
+// Adds 1 sample report, made from the sample "Smoke test" run (or the first finished run).
+function seedReports() {
+  const run =
+    db.prepare("SELECT id FROM test_runs_v2 WHERE suite_name = 'Smoke test' AND created_by = 'Sample data' ORDER BY id LIMIT 1").get() ??
+    db.prepare('SELECT id FROM test_runs_v2 WHERE end_time IS NOT NULL ORDER BY start_time LIMIT 1').get();
+  if (!run) return;
+  createReportFromRun(db, run.id);
+  console.log('Added 1 sample report to the database.');
 }
 
 export default db;

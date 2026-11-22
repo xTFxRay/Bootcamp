@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router';
-import { testRunsApi } from '../api.js';
+import { Link, useNavigate, useParams } from 'react-router';
+import { reportsApi, testRunsApi } from '../api.js';
 import { formatDate, formatDuration } from '../format.js';
 import { useLeaveWarning } from '../use-leave-warning.js';
 import RunCaseCard from '../components/RunCaseCard.jsx';
@@ -10,6 +10,21 @@ export default function TestRunDetailPage() {
   const [run, setRun] = useState(null);
   const [loadError, setLoadError] = useState('');
   const [notice, setNotice] = useState(null); // { text, id }
+  const navigate = useNavigate();
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+
+  const handleGenerateReport = async () => {
+    setGenerating(true);
+    setGenerateError('');
+    try {
+      const report = await reportsApi.create(Number(id));
+      navigate(`/reports/${report.id}`);
+    } catch (err) {
+      setGenerateError(err.message);
+      setGenerating(false);
+    }
+  };
 
   // Which cases have typed notes that aren't saved yet.
   const [dirtyIds, setDirtyIds] = useState(() => new Set());
@@ -72,8 +87,20 @@ export default function TestRunDetailPage() {
 
       <div className="page-header">
         <h1><span className="muted">Run #{run.id}</span> {run.suiteName}</h1>
-        {run.suiteId && <Link to={`/test-suites/${run.suiteId}`}>Open the suite</Link>}
+        <div className="header-actions">
+          {run.suiteId && <Link className="button" to={`/test-suites/${run.suiteId}`}>Open the suite</Link>}
+          <button
+            type="button"
+            className="button button-primary"
+            onClick={handleGenerateReport}
+            disabled={generating}
+            title={run.status === 'in-progress' ? 'The report will show cases without a result as "not run".' : undefined}
+          >
+            {generating ? 'Generating…' : 'Generate report'}
+          </button>
+        </div>
       </div>
+      {generateError && <p className="form-error" role="alert">Could not generate the report: {generateError}</p>}
 
       <dl className="suite-meta">
         <div><dt>Status</dt><dd><span className={`status-text status-${run.status}`}>{run.status}</span></dd></div>
