@@ -51,7 +51,7 @@ When a case is marked failed, the server posts an alert to Discord, using `DISCO
 
 ## Bug report fields
 
-Saved in `tests/bugs/` by `/bug-report`, and tracked in the app at `/bugs`.
+Saved in `tests/bugs/` by `/qa-plugin:bug-report`, and tracked in the app at `/bugs`.
 
 - **Title**
 - **Description**: optional; a short summary of the problem
@@ -72,6 +72,10 @@ New bugs start as open. Allowed status changes (the server rejects any other):
 - reopened → in-progress, closed
 
 Every status change and comment is recorded in the bug's activity history.
+
+## QA tooling
+
+The slash commands, skills, subagents and hooks used here (test cases, bug reports, daily updates, QA reviews, test runs, response-shape and severity checks, the after-commit page check) live in the `qa-plugin` plugin, not in this repo. It is enabled for this project in `.claude/settings.local.json` and read from the plugin folder next to this project. Its commands start with `/qa-plugin:`.
 
 ## API response shape
 
