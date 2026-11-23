@@ -18,3 +18,11 @@ services:
       # Discord alerts off. It's a secret, so it lives in Render, never in this file.
       - key: DISCORD_WEBHOOK_URL
         sync: false
+      # Optional. Turns on automatic root-cause hypotheses for flaky tests (Claude API).
+      # Also a secret: set in Render, never in this file.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Protects saving flaky-test hypotheses on the public site. Use the same value as
+      # FLAKY_WRITE_TOKEN in your local .env, so the flake-analyst agent can save here.
+      - key: FLAKY_WRITE_TOKEN
+        sync: false

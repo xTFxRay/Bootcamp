@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createReportFromRun } from './report-snapshot.js';
+import { seedFlakyHistory } from './seed-flaky-history.js';
 
 // Values allowed by CLAUDE.md.
 export const SEVERITIES = ['Critical', 'Major', 'Minor', 'Trivial'];
@@ -148,6 +149,26 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS reports_generated ON reports (generated_at);
 
+  -- Flaky tests (see CLAUDE.md). A test case is flagged the moment it turns flaky, so the Discord
+  -- alert fires once; the flag is cleared (cleared_at) if it becomes stable again.
+  CREATE TABLE IF NOT EXISTS flaky_flags (
+    test_case_id  INTEGER PRIMARY KEY REFERENCES test_cases(id) ON DELETE CASCADE,
+    flagged_at    TEXT NOT NULL,
+    alert_sent_at TEXT,                       -- when the Discord alert was sent
+    alert_error   TEXT,                       -- why it wasn't, if it wasn't
+    cleared_at    TEXT                        -- set when the test stopped being flaky
+  );
+  -- Root-cause hypotheses written by the flake-analyzer agent (.claude/agents), one per test case.
+  CREATE TABLE IF NOT EXISTS flake_hypotheses (
+    test_case_id     INTEGER PRIMARY KEY REFERENCES test_cases(id) ON DELETE CASCADE,
+    hypothesis       TEXT NOT NULL,
+    evidence         TEXT,
+    confidence       TEXT NOT NULL CHECK (confidence IN ('low', 'medium', 'high')),
+    based_on_results INTEGER NOT NULL,        -- how many results the test had when it was written
+    written_by       TEXT NOT NULL,
+    written_at       TEXT NOT NULL
+  );
+
   -- One row per user (for now there is only user 1). Missing row = all defaults.
   CREATE TABLE IF NOT EXISTS user_preferences (
     user_id                        INTEGER PRIMARY KEY,
@@ -166,6 +187,9 @@ seedOnce('seeded_test_suites', 'test_suites', seedTestSuites);
 seedOnce('seeded_bugs', 'bugs', seedBugs);
 seedOnce('seeded_test_runs', 'test_runs_v2', seedTestRuns);
 seedOnce('seeded_reports', 'reports', seedReports);
+// Keyed on flaky_flags (new and empty), so the sample history is added once, even to a database
+// that already has runs.
+seedOnce('seeded_flaky_history', 'flaky_flags', () => seedFlakyHistory(db));
 
 // Databases made before a status was added (e.g. "blocked") still have the old list of
 // allowed statuses built into the test_cases table. SQLite can't change that rule in place,

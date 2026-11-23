@@ -52,13 +52,18 @@ export default function TestSuitesPage() {
     }
   };
 
+  const [deleting, setDeleting] = useState(false);
   const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
     try {
       await testSuitesApi.remove(modal.suite.id);
       closeModal();
       load();
     } catch (err) {
       setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -136,8 +141,10 @@ export default function TestSuitesPage() {
           <p>{suiteDeleteMessage(modal.suite.name, modal.suite.caseCount)}</p>
           {deleteError && <p className="form-error" role="alert">{deleteError}</p>}
           <div className="form-actions">
-            <button type="button" className="button" onClick={closeModal}>Cancel</button>
-            <button type="button" className="button button-danger" onClick={handleDelete}>Delete</button>
+            <button type="button" className="button" onClick={closeModal} disabled={deleting}>Cancel</button>
+            <button type="button" className="button button-danger" onClick={handleDelete} disabled={deleting} aria-busy={deleting}>
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
           </div>
         </Modal>
       )}

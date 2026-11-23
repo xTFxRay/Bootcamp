@@ -58,6 +58,11 @@ export default function TestRunDetailPage() {
     let text = 'Result saved.';
     if (failedItem?.alertSentAt) text = 'Marked failed. A Discord alert was sent.';
     else if (failedItem?.alertError) text = 'Marked failed, but the Discord alert was not sent.';
+    if (updated.newFlake) {
+      text += ` “${updated.newFlake.title}” is now flaky (${updated.newFlake.score}%)`;
+      text += updated.newFlake.alert?.ok ? ': a Discord alert was sent.' : ', but the Discord alert was not sent.';
+      if (updated.newFlake.aiHypothesis === 'writing') text += ' Claude is writing a root-cause hypothesis on the Flaky tests page.';
+    }
     if (updated.status !== 'in-progress' && run?.status === 'in-progress') {
       text += ` All cases are done: the run ${updated.status}.`;
     }
@@ -75,7 +80,7 @@ export default function TestRunDetailPage() {
       </main>
     );
   }
-  if (!run) return <main className="page"><p>Loading…</p></main>;
+  if (!run) return <main className="page"><p className="page-loading" role="status">Loading…</p></main>;
 
   const done = run.passCount + run.failCount + run.skipCount;
   const percent = (n) => `${(n / run.caseCount) * 100}%`;
@@ -94,6 +99,7 @@ export default function TestRunDetailPage() {
             className="button button-primary"
             onClick={handleGenerateReport}
             disabled={generating}
+            aria-busy={generating}
             title={run.status === 'in-progress' ? 'The report will show cases without a result as "not run".' : undefined}
           >
             {generating ? 'Generating…' : 'Generate report'}

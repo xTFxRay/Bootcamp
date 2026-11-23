@@ -152,7 +152,7 @@ export default function BugDetailPage() {
     );
   }
 
-  if (!bug) return <main className="page"><p>Loading…</p></main>;
+  if (!bug) return <main className="page"><p className="page-loading" role="status">Loading…</p></main>;
 
   const isDone = bug.status === 'closed';
 
@@ -229,7 +229,7 @@ export default function BugDetailPage() {
               <textarea value={statusNote} onChange={(e) => setStatusNote(e.target.value)} rows={2} maxLength={2000} />
             </label>
             {statusError && <p className="form-error" role="alert">{statusError}</p>}
-            <button type="submit" className="button button-primary" disabled={changingStatus}>
+            <button type="submit" className="button button-primary" disabled={changingStatus} aria-busy={changingStatus}>
               {changingStatus ? 'Changing…' : 'Change status'}
             </button>
           </form>
@@ -253,7 +253,7 @@ export default function BugDetailPage() {
           </label>
           {commentError && <p className="form-error" role="alert">{commentError}</p>}
           <div>
-            <button type="submit" className="button" disabled={addingComment}>
+            <button type="submit" className="button" disabled={addingComment} aria-busy={addingComment}>
               {addingComment ? 'Adding…' : 'Add comment'}
             </button>
           </div>
@@ -279,7 +279,7 @@ export default function BugDetailPage() {
           {deleteError && <p className="form-error" role="alert">{deleteError}</p>}
           <div className="form-actions">
             <button type="button" className="button" onClick={closeModal} disabled={deleting}>Cancel</button>
-            <button type="button" className="button button-danger" onClick={handleDelete} disabled={deleting}>
+            <button type="button" className="button button-danger" onClick={handleDelete} disabled={deleting} aria-busy={deleting}>
               {deleting ? 'Deleting…' : 'Delete'}
             </button>
           </div>

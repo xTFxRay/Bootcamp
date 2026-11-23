@@ -14,7 +14,8 @@ npm run dev
 
 Open http://localhost:5173. The server runs on port 3001 and fills a new database with sample data
 the first time. To turn on Discord alerts for failed test cases, copy `.env.example` to `.env` and
-set `DISCORD_WEBHOOK_URL`.
+set `DISCORD_WEBHOOK_URL`. To have Claude write root-cause hypotheses for flaky tests
+automatically, set `ANTHROPIC_API_KEY` too.
 
 ## DEPLOY
 
@@ -44,9 +45,18 @@ Checked November 2026 against [Render's free tier docs](https://render.com/docs/
    open "https://render.com/deploy?repo=https://github.com/xTFxRay/Bootcamp"
    ```
 
-   Render asks for `DISCORD_WEBHOOK_URL`. Paste your webhook to get alerts, or leave it empty.
+   Render asks for `DISCORD_WEBHOOK_URL` and `ANTHROPIC_API_KEY`. Paste them to get alerts and
+   automatic flaky-test hypotheses, or leave them empty. If the service already exists, add them
+   under the service's **Environment** tab instead (Render then redeploys).
 3. Wait for the first build (a few minutes). The public address appears at the top of the
    service's page, for example `https://bootcamp-app.onrender.com`.
+
+### Flaky-test hypotheses on the deployed site
+
+Without an API key, ask Claude Code to "fill in the deployed flaky test hypotheses": the
+`flake-analyzer` agent reads the deployed /flaky page and saves a hypothesis for each flaky
+test, using `FLAKY_WRITE_TOKEN` from your local `.env`. On the free tier they're lost the next time
+the service sleeps or redeploys, along with all other data, so run it again before showing the site.
 
 ### Later deploys
 
@@ -58,7 +68,9 @@ See `.env.example`. On Render:
 
 | Variable | Needed | What it does |
 |---|---|---|
-| `DISCORD_WEBHOOK_URL` | no | Discord alerts for failed test cases; set in Render, never in a file |
+| `DISCORD_WEBHOOK_URL` | no | Discord alerts for failed test cases and new flaky tests; set in Render, never in a file |
+| `ANTHROPIC_API_KEY` | no | Claude writes a root-cause hypothesis for each new flaky test (and on "Write with AI"); each one is a billed Claude API request. Set in Render, never in a file |
+| `FLAKY_WRITE_TOKEN` | recommended | Protects saving flaky-test hypotheses on the public site. Use the same value as in your local `.env`, so `flake-analyzer` can save to the deployed copy |
 | `APP_URL` | no | Address used in alert links; defaults to Render's own address |
 | `PORT` | set by Render | Port the server listens on |
 | `DB_PATH` | no | Where the database file goes; only useful with a paid disk |

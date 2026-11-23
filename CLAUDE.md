@@ -87,13 +87,29 @@ Stored in the `user_preferences` table, one row per user (only user 1 for now), 
 - **Default severity for new bugs**: Critical / Major / Minor / Trivial (default Minor); preselected in the Report a bug form.
 - **Default page size** (10 / 20 / 50 / 100, default 20), **time zone** (default: the browser's) and **auto-generate report after run** (default on) are saved but not used by the app yet.
 
+## Flaky tests
+
+`/flaky` tracks every test case's pass/fail history across all runs (`server/flakiness.js`, `server/flaky-tracker.js`).
+
+- History: passed and failed results only (skipped and not-run are ignored), the most recent 20, oldest first.
+- States: stable (always passed), failing (always failed: broken, not flaky), regressed / recovered (flipped once), **flaky** (passed and failed, flipped at least twice), not enough data (under 4 results).
+- Score: flips ÷ (results − 1), 0–100%. The page lists the 10 highest.
+- When a recorded result makes a test newly flaky, it's flagged in `flaky_flags` and a Discord alert is posted once (`DISCORD_WEBHOOK_URL`). The flag clears if the test becomes stable again.
+- After Claude writes a test run result (a Bash command sending `PATCH /api/test-runs/:id/results/:id`), the PostToolUse hook `flaky-after-result.sh` in qa-plugin calls `POST /api/flaky/recompute`: it recomputes the leaderboard, alerts any new flake not yet alerted, and retries alerts that failed. Results recorded in the browser are covered by the server's own check; both share `flaky_flags`, so each flake is alerted once.
+- Root-cause hypotheses are stored in `flake_hypotheses`; a hypothesis is out of date once the test has newer results. Two writers:
+  - Automatic (`server/flake-hypothesis-ai.js`): when a test turns flaky, the server sends its evidence to the Claude API (Claude Opus 5.5) in the background and saves the answer; the page's "Write with AI" button does the same on demand (`POST /api/flaky/:testCaseId/hypothesis/generate`). Needs `ANTHROPIC_API_KEY` (in `.env`, and in Render); without it, AI is off and nothing is called.
+  - On request: the `flake-analyzer` agent in Claude Code, with a SubagentStop hook that keeps it working until every top-10 test has a current one. It works on the local app or, when asked, on the deployed copy (https://bootcamp-app-a2hk.onrender.com).
+- Writing hypotheses (PUT, DELETE, `/generate`) needs the `X-Write-Token` header when `FLAKY_WRITE_TOKEN` is set on the server (it is on the deployed site; the agent reads it from `.env` without printing it). Unset locally means no token needed.
+- API: `GET /api/flaky` (summary + top 10), `GET /api/flaky/history`, `GET /api/flaky/:testCaseId/evidence`, `POST /api/flaky/recompute`, `PUT` / `DELETE /api/flaky/:testCaseId/hypothesis` (`{ hypothesis, evidence, confidence: low|medium|high }`).
+- Sample history: the "Nightly regression" suite, 12 runs, added once per database.
+
 ## Keyboard shortcuts
 
 Defined only in `client/src/shortcuts.js`: the key handler runs them from that list and the `?` help dialog is drawn from it. Plain-key shortcuts never fire while typing in a field or while a dialog is open. Quick search (⌘K / Ctrl+K) uses `GET /api/search?q=`, which returns up to 5 test cases, bugs and suites.
 
 ## QA tooling
 
-The slash commands, skills, subagents and hooks used here (test cases, bug reports, daily updates, QA reviews, test runs, response-shape and severity checks, the after-commit page check) live in the `qa-plugin` plugin, not in this repo. It is enabled for this project in `.claude/settings.local.json` and read from the plugin folder next to this project. Its commands start with `/qa-plugin:`.
+The slash commands, skills, subagents and hooks used here (test cases, bug reports, daily updates, QA reviews, test runs, response-shape and severity checks, the after-commit page check) live in the `qa-plugin` plugin, not in this repo. It is enabled for this project in `.claude/settings.local.json` and read from the plugin folder next to this project. Its commands start with `/qa-plugin:`. One exception: the `flake-analyzer` subagent lives in this repo, at `.claude/agents/flake-analyzer.md`.
 
 ## API response shape
 

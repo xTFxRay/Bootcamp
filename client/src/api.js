@@ -91,6 +91,13 @@ export const searchApi = {
   search: (q) => request(`/search?q=${encodeURIComponent(q)}`),
 };
 
+export const flakyApi = {
+  leaderboard: () => request('/flaky'),
+  history: () => request('/flaky/history'),
+  // Has the Claude API write the root-cause hypothesis now.
+  writeHypothesis: (testCaseId) => request(`/flaky/${testCaseId}/hypothesis/generate`, { method: 'POST' }),
+};
+
 export const dashboardApi = {
   metrics: () => request('/dashboard/metrics'),
   trends: () => request('/dashboard/trends'),

@@ -53,7 +53,7 @@ export default function TestSuiteForm({ initial, onSubmit, onCancel, onDirtyChan
 
       <div className="form-actions">
         <button type="button" className="button" onClick={onCancel}>Cancel</button>
-        <button type="submit" className="button button-primary" disabled={saving}>
+        <button type="submit" className="button button-primary" disabled={saving} aria-busy={saving}>
           {saving ? 'Saving…' : initial ? 'Save changes' : 'Create suite'}
         </button>
       </div>

@@ -51,7 +51,7 @@ export default function NewRunForm({ suiteName, caseCount, onStart, onCancel, on
       </label>
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="form-actions">
-        <button type="button" className="button" onClick={onCancel} disabled={starting}>Cancel</button>
+        <button type="button" className="button" onClick={onCancel} disabled={starting} aria-busy={starting}>Cancel</button>
         <button type="submit" className="button button-primary" disabled={starting}>
           {starting ? 'Starting…' : '▶ Start run'}
         </button>

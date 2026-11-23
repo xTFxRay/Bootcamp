@@ -15,6 +15,7 @@ import DashboardPage from './pages/DashboardPage.jsx';
 import ReportsPage from './pages/ReportsPage.jsx';
 import ReportDetailPage from './pages/ReportDetailPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
+import FlakyTestsPage from './pages/FlakyTestsPage.jsx';
 
 export default function App() {
   const [dialog, setDialog] = useState(null); // 'search' | 'help' | null
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/reports/:id" element={<ReportDetailPage />} />
           <Route path="/bugs" element={<BugsPage />} />
           <Route path="/bugs/:id" element={<BugDetailPage />} />
+          <Route path="/flaky" element={<FlakyTestsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<main className="page"><h1>Page not found</h1></main>} />
         </Routes>

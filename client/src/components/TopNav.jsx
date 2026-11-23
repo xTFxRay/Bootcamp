@@ -9,13 +9,15 @@ export const NAV_SECTIONS = [
   { to: '/test-cases', label: 'Test cases' },
   { to: '/test-suites', label: 'Test suites' },
   { to: '/test-runs', label: 'Test runs' },
+  { to: '/flaky', label: 'Flaky tests' },
   { to: '/bugs', label: 'Bugs' },
   { to: '/reports', label: 'Reports' },
   { to: '/settings', label: 'Settings' },
 ];
 
-// Below this width the links fold into a "Menu" button (matches the 768px rule in index.css).
-const NARROW = '(max-width: 767px)';
+// Below this width the links fold into a "Menu" button (matches the 1024px rule in index.css):
+// 8 sections don't fit on one line on narrower screens.
+const NARROW = '(max-width: 1023px)';
 
 // The top bar on every page: name, sections, search and shortcuts help.
 // On narrow screens the sections open from a Menu button; the menu closes when a page opens,

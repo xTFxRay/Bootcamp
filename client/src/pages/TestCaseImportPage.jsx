@@ -296,7 +296,7 @@ export default function TestCaseImportPage() {
 
           <div className="form-actions import-actions">
             <button type="button" className="button" onClick={startOver} disabled={Boolean(busy)}>Choose a different file</button>
-            <button type="button" className="button button-primary" onClick={runImport} disabled={valid === 0 || Boolean(busy)}>
+            <button type="button" className="button button-primary" onClick={runImport} disabled={valid === 0 || Boolean(busy)} aria-busy={busy === 'importing'}>
               {busy === 'importing' ? 'Importing…' : valid === 0 ? 'Nothing to import' : `Import ${valid} test ${valid === 1 ? 'case' : 'cases'}`}
             </button>
           </div>

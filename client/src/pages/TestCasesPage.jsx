@@ -88,13 +88,18 @@ export default function TestCasesPage() {
     load();
   };
 
+  const [deleting, setDeleting] = useState(false);
   const handleDelete = async () => {
+    if (deleting) return;
+    setDeleting(true);
     try {
       await testCasesApi.remove(modal.testCase.id);
       closeModal();
       load();
     } catch (err) {
       setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -231,8 +236,10 @@ export default function TestCasesPage() {
           <p>“{modal.testCase.title}” will be deleted and removed from any test suites. This can't be undone.</p>
           {deleteError && <p className="form-error" role="alert">{deleteError}</p>}
           <div className="form-actions">
-            <button type="button" className="button" onClick={closeModal}>Cancel</button>
-            <button type="button" className="button button-danger" onClick={handleDelete}>Delete</button>
+            <button type="button" className="button" onClick={closeModal} disabled={deleting}>Cancel</button>
+            <button type="button" className="button button-danger" onClick={handleDelete} disabled={deleting} aria-busy={deleting}>
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
           </div>
         </Modal>
       )}

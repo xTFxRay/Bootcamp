@@ -56,7 +56,7 @@ export default function SettingsPage() {
       </main>
     );
   }
-  if (!draft) return <main className="page page-narrow"><h1>Settings</h1><p>Loading…</p></main>;
+  if (!draft) return <main className="page page-narrow"><h1>Settings</h1><p className="page-loading" role="status">Loading…</p></main>;
 
   const set = (key) => (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -153,7 +153,7 @@ export default function SettingsPage() {
         </fieldset>
 
         <div className="settings-actions">
-          <button type="submit" className="button button-primary" disabled={!dirty || saving}>
+          <button type="submit" className="button button-primary" disabled={!dirty || saving} aria-busy={saving}>
             {saving ? 'Saving…' : 'Save settings'}
           </button>
           {dirty && !saving && (

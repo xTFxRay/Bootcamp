@@ -17,14 +17,35 @@ export async function sendTestFailureAlert({ runId, suiteName, title, notes }) {
   const room = MAX_LENGTH - header.length - footer.length;
   const shortNotes = notes.length > room ? `${notes.slice(0, room - 1)}…` : notes;
 
+  return postToDiscord(url, header + shortNotes + footer);
+}
+
+// Sends the alert for a test case that just turned flaky. Never throws: returns { ok: true } or { ok: false, error }.
+// history: the test's recent results, oldest first ('passed' | 'failed').
+export async function sendFlakeAlert({ title, score, history, runId, suiteName }) {
+  const url = process.env.DISCORD_WEBHOOK_URL;
+  if (!url) return { ok: false, error: 'Discord alerts are off: DISCORD_WEBHOOK_URL is not set in .env.' };
+
+  const strip = history.map((r) => (r === 'passed' ? '✓' : '✕')).join(' ');
+  const content = [
+    `⚠️ **New flaky test:** ${title.length > 300 ? `${title.slice(0, 299)}…` : title}`,
+    `**Flakiness:** ${score}% (the result changed in ${score}% of consecutive runs)`,
+    `**Last ${history.length} results, oldest first:** ${strip}`,
+    `**Turned flaky in:** run #${runId} · ${suiteName}`,
+    `${APP_URL()}/flaky`,
+  ].join('\n');
+  return postToDiscord(url, content.slice(0, MAX_LENGTH));
+}
+
+async function postToDiscord(url, content) {
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         username: 'Bootcamp App',
-        content: header + shortNotes + footer,
-        allowed_mentions: { parse: [] }, // text like @everyone in the notes must not ping anyone
+        content,
+        allowed_mentions: { parse: [] }, // text like @everyone in titles or notes must not ping anyone
       }),
       signal: AbortSignal.timeout(8000),
     });

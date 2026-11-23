@@ -96,7 +96,7 @@ export default function RunCaseCard({ runId, item, onSaved, onDirtyChange }) {
           disabled={busy}
         />
         {dirty && item.result && (
-          <button type="button" className="button" onClick={() => record(item.result)} disabled={busy}>
+          <button type="button" className="button" onClick={() => record(item.result)} disabled={busy} aria-busy={busy}>
             {busy ? 'Saving…' : 'Save notes'}
           </button>
         )}

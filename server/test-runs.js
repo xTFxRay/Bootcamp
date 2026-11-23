@@ -3,6 +3,7 @@ import db, { TEST_RUN_RESULTS, TEST_RUN_STATUSES } from './db.js';
 import { ok, fail } from './api-response.js';
 import { textTypeError, toId } from './validation.js';
 import { sendTestFailureAlert } from './discord.js';
+import { checkForNewFlake } from './flaky-tracker.js';
 
 // Test run endpoints, mounted at /api/test-runs.
 // Every reply uses { success, data, error } (see CLAUDE.md).
@@ -225,7 +226,10 @@ async function handleRecordTestResult(req, res) {
     );
   }
 
-  ok(res, runWithResults(run.id));
+  // Did this result make the test case flaky? If so it's flagged and a Discord alert goes out (once).
+  const newFlake = await checkForNewFlake(row.test_case_id, { runId: run.id, suiteName: run.suite_name });
+
+  ok(res, { ...runWithResults(run.id), newFlake });
 }
 
 // DELETE /api/test-runs/:id (removes the run and its results; the suite and test cases stay)

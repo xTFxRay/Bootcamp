@@ -34,7 +34,7 @@ export default function ReportDetailPage() {
       </main>
     );
   }
-  if (!report) return <main className="page"><p>Loading…</p></main>;
+  if (!report) return <main className="page"><p className="page-loading" role="status">Loading…</p></main>;
 
   const decided = report.passedCount + report.failedCount;
   const passRate = decided ? `${Math.round((report.passedCount / decided) * 1000) / 10}%` : '—';

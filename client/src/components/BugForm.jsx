@@ -146,7 +146,7 @@ export default function BugForm({ initial, onSubmit, onCancel, onDirtyChange, on
       {error && <p className="form-error" role="alert">{error}</p>}
 
       <div className="form-actions">
-        <button type="button" className="button" onClick={onCancel} disabled={saving}>Cancel</button>
+        <button type="button" className="button" onClick={onCancel} disabled={saving} aria-busy={saving}>Cancel</button>
         <button type="submit" className="button button-primary" disabled={saving}>
           {saving ? 'Saving…' : initial ? 'Save changes' : 'Report bug'}
         </button>
