@@ -1,0 +1,8 @@
+{
+  "name": "qa-command-center",
+  "description": "QA toolkit for Claude Code that ships with the QA Command Center app: slash commands for test cases, bug reports and daily updates; skills for boundary-value test generation, QA reviews and pushing to GitHub; subagents that write, review and run tests and explain flaky tests; and hooks that check API response shape and severity values, check the app after each commit, recompute flaky tests after a run result, and keep the flake analyzer working until every top-10 flaky test has a hypothesis.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Raimonds Belkovskis"
+  }
+}

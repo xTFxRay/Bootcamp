@@ -1,0 +1,14 @@
+{
+  "name": "qa-command-center",
+  "description": "The QA Command Center QA toolkit for Claude Code, shipped in the app's own repository.",
+  "owner": {
+    "name": "Raimonds Belkovskis"
+  },
+  "plugins": [
+    {
+      "name": "qa-command-center",
+      "source": "./",
+      "description": "QA toolkit: test case and bug report commands, test generation and QA review skills, test and flaky-test subagents, and QA hooks."
+    }
+  ]
+}

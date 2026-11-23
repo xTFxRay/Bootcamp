@@ -1,6 +1,6 @@
 ---
 name: flake-analyzer
-description: Writes a root-cause hypothesis for each of the 10 flakiest tests on the app's Flaky tests page (/flaky), from their pass/fail history, failure notes, timings and run order, and saves it in the app. Delegate to it when the user asks to explain flaky tests, find the cause of a flaky test, fill in or refresh the "Likely root cause" column, or analyse flakiness. Works on the local app (http://localhost:5173, the default; make sure it's running) or on the deployed copy (https://bootcamp-app-a2hk.onrender.com) when the request says "deployed", "Render" or "live site". It only reads evidence and saves hypotheses; it never changes code, test cases or results. Not for running tests (use qa-plugin:test-runner) or fixing the flakiness.
+description: Writes a root-cause hypothesis for each of the 10 flakiest tests on the app's Flaky tests page (/flaky), from their pass/fail history, failure notes, timings and run order, and saves it in the app. Delegate to it when the user asks to explain flaky tests, find the cause of a flaky test, fill in or refresh the "Likely root cause" column, or analyse flakiness. Works on the local app (http://localhost:5173, the default; make sure it's running) or on the deployed copy (https://bootcamp-app-a2hk.onrender.com) when the request says "deployed", "Render" or "live site". It only reads evidence and saves hypotheses; it never changes code, test cases or results. Not for running tests (use the test-runner agent) or fixing the flakiness.
 tools: Read, Bash
 ---
 

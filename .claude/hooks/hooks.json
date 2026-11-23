@@ -1,0 +1,53 @@
+{
+  "description": "QA hooks: API response shape and severity warnings after file edits; an app health check (with Discord alert) after each commit; after Claude writes a test run result, the flaky-test leaderboard is recomputed and a Discord alert is posted for any new flake; and the flake-analyzer agent can't stop while a top-10 flaky test lacks a current hypothesis. None of them block anything else.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/check-response-shape.sh\"",
+            "timeout": 15,
+            "statusMessage": "Checking API response shape"
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/check-severity-enum.sh\"",
+            "timeout": 15,
+            "statusMessage": "Checking severity values"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/page_down.sh\"",
+            "timeout": 60,
+            "statusMessage": "Checking the app is still up after the commit"
+          },
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/flaky-after-result.sh\"",
+            "timeout": 40,
+            "statusMessage": "Recomputing flaky tests after the run result"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/check-flake-hypotheses.sh\"",
+            "timeout": 15,
+            "statusMessage": "Checking every flaky test has a hypothesis"
+          }
+        ]
+      }
+    ]
+  }
+}

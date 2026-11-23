@@ -57,7 +57,7 @@ When a case is marked failed, the server posts an alert to Discord, using `DISCO
 
 ## Bug report fields
 
-Saved in `tests/bugs/` by `/qa-plugin:bug-report`, and tracked in the app at `/bugs`.
+Saved in `tests/bugs/` by the `bug-report` command, and tracked in the app at `/bugs`.
 
 - **Title**
 - **Description**: optional; a short summary of the problem
@@ -95,7 +95,7 @@ Stored in the `user_preferences` table, one row per user (only user 1 for now), 
 - States: stable (always passed), failing (always failed: broken, not flaky), regressed / recovered (flipped once), **flaky** (passed and failed, flipped at least twice), not enough data (under 4 results).
 - Score: flips ÷ (results − 1), 0–100%. The page lists the 10 highest.
 - When a recorded result makes a test newly flaky, it's flagged in `flaky_flags` and a Discord alert is posted once (`DISCORD_WEBHOOK_URL`). The flag clears if the test becomes stable again.
-- After Claude writes a test run result (a Bash command sending `PATCH /api/test-runs/:id/results/:id`), the PostToolUse hook `flaky-after-result.sh` in qa-plugin calls `POST /api/flaky/recompute`: it recomputes the leaderboard, alerts any new flake not yet alerted, and retries alerts that failed. Results recorded in the browser are covered by the server's own check; both share `flaky_flags`, so each flake is alerted once.
+- After Claude writes a test run result (a Bash command sending `PATCH /api/test-runs/:id/results/:id`), the PostToolUse hook `.claude/hooks/flaky-after-result.sh` calls `POST /api/flaky/recompute`: it recomputes the leaderboard, alerts any new flake not yet alerted, and retries alerts that failed. Results recorded in the browser are covered by the server's own check; both share `flaky_flags`, so each flake is alerted once.
 - Root-cause hypotheses are stored in `flake_hypotheses`; a hypothesis is out of date once the test has newer results. Two writers:
   - Automatic (`server/flake-hypothesis-ai.js`): when a test turns flaky, the server sends its evidence to the Claude API (Claude Opus 5.5) in the background and saves the answer; the page's "Write with AI" button does the same on demand (`POST /api/flaky/:testCaseId/hypothesis/generate`). Needs `ANTHROPIC_API_KEY` (in `.env`, and in Render); without it, AI is off and nothing is called.
   - On request: the `flake-analyzer` agent in Claude Code, with a SubagentStop hook that keeps it working until every top-10 test has a current one. It works on the local app or, when asked, on the deployed copy (https://bootcamp-app-a2hk.onrender.com).
@@ -109,7 +109,7 @@ Defined only in `client/src/shortcuts.js`: the key handler runs them from that l
 
 ## QA tooling
 
-The slash commands, skills, subagents and hooks used here (test cases, bug reports, daily updates, QA reviews, test runs, response-shape and severity checks, the after-commit page check) live in the `qa-plugin` plugin, not in this repo. It is enabled for this project in `.claude/settings.local.json` and read from the plugin folder next to this project. Its commands start with `/qa-plugin:`. One exception: the `flake-analyzer` subagent lives in this repo, at `.claude/agents/flake-analyzer.md`.
+The slash commands, skills, subagents and hooks used here (test cases, bug reports, daily updates, QA reviews, test runs, flaky-test hypotheses, response-shape and severity checks, the after-commit page check, the flaky-test recompute) live in this repo under `.claude/` (`commands/`, `skills/`, `agents/`, `hooks/`), and are packaged as the `qa-command-center` plugin: manifest in `.claude-plugin/plugin.json` (metadata only), marketplace entry in `.claude-plugin/marketplace.json`, and root links `commands`, `skills`, `agents`, `hooks` pointing at the `.claude/` folders so the plugin finds them. Edit the files in `.claude/`, never the links. Hook wiring: `.claude/hooks/hooks.json` for the plugin, `.claude/hooks/settings.fragment.json` for project settings; keep the two in step. Installed as a plugin, its commands start with `/qa-command-center:`. Worked examples are in `examples/`; install steps are in README.md.
 
 ## API response shape
 
